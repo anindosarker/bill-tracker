@@ -52,7 +52,7 @@ const billEntrySchema = z.object({
       z.undefined(),
     ])
     .pipe(
-      z.number().min(0, "Overtime wage per hour must be positive").optional()
+      z.number().min(0, "Overtime wage per hour must be positive").optional(),
     ),
 });
 
@@ -84,14 +84,15 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   const [preparedBy, setPreparedBy] = useState(initialData?.preparedBy || "");
   const [checkedBy, setCheckedBy] = useState(initialData?.checkedBy || "");
   const [approvedBy, setApprovedBy] = useState(initialData?.approvedBy || "");
+  const [signatoryName, setSignatoryName] = useState("Prodip Kumar Sarker");
   const [signatures, setSignatures] = useState<string[]>(
-    initialData?.entries?.map((e) => e.signature || "") || []
+    initialData?.entries?.map((e) => e.signature || "") || [],
   );
   const [paymentStatuses, setPaymentStatuses] = useState<string[]>(
-    initialData?.entries?.map((e) => e.paymentStatus || "cash") || []
+    initialData?.entries?.map((e) => e.paymentStatus || "cash") || [],
   );
   const [completedEntries, setCompletedEntries] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
 
   const form = useForm<BillFormValues>({
@@ -124,7 +125,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
     }
     if (watchedEntries.length !== paymentStatuses.length) {
       setPaymentStatuses(
-        watchedEntries.map((_, idx) => paymentStatuses[idx] || "cash")
+        watchedEntries.map((_, idx) => paymentStatuses[idx] || "cash"),
       );
     }
   }, [watchedEntries.length]);
@@ -221,7 +222,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-6xl mx-auto">
+    <Card className="mx-auto w-full max-w-6xl">
       <CardHeader>
         <CardTitle className="text-2xl">
           {billId ? "Edit Bill" : "Create New Bill"}
@@ -232,7 +233,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
           <form className="space-y-6">
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold mb-4">Worker Entries</h3>
+                <h3 className="mb-4 text-lg font-semibold">Worker Entries</h3>
               </div>
 
               <div className="space-y-4">
@@ -249,7 +250,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                         <h4 className="font-medium">Worker {index + 1}</h4>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <FormField
                           // @ts-expect-error - Type mismatch due to Zod union/pipe schema
                           control={form.control}
@@ -285,10 +286,10 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                                     field.onChange(
                                       e.target.value === ""
                                         ? undefined
-                                        : e.target.value
+                                        : e.target.value,
                                     )
                                   }
-                                  className="text-lg min-h-[44px]"
+                                  className="min-h-[44px] text-lg"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -313,10 +314,10 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                                     field.onChange(
                                       e.target.value === ""
                                         ? undefined
-                                        : e.target.value
+                                        : e.target.value,
                                     )
                                   }
-                                  className="text-lg min-h-[44px]"
+                                  className="min-h-[44px] text-lg"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -341,10 +342,10 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                                     field.onChange(
                                       e.target.value === ""
                                         ? undefined
-                                        : e.target.value
+                                        : e.target.value,
                                     )
                                   }
-                                  className="text-lg min-h-[44px]"
+                                  className="min-h-[44px] text-lg"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -369,10 +370,10 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                                     field.onChange(
                                       e.target.value === ""
                                         ? undefined
-                                        : e.target.value
+                                        : e.target.value,
                                     )
                                   }
-                                  className="text-lg min-h-[44px]"
+                                  className="min-h-[44px] text-lg"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -380,8 +381,8 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                           )}
                         />
 
-                        <div className="md:col-span-2 bg-muted p-3 rounded-lg">
-                          <div className="flex justify-between items-center">
+                        <div className="bg-muted rounded-lg p-3 md:col-span-2">
+                          <div className="flex items-center justify-between">
                             <span className="font-medium">Entry Total:</span>
                             <span className="text-lg font-bold">
                               {entryTotal.toLocaleString("en-BD")} Tk
@@ -410,8 +411,8 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                           isNotCompleted
                         ) {
                           return (
-                            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                              <p className="text-sm text-yellow-800 font-medium">
+                            <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                              <p className="text-sm font-medium text-yellow-800">
                                 ⚠️ Don&apos;t forget to click &quot;Add to
                                 Bill&quot; to save this entry!
                               </p>
@@ -422,7 +423,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                       })()}
 
                       {/* Action buttons at the bottom */}
-                      <div className="mt-4 pt-4 border-t flex gap-2 justify-between">
+                      <div className="mt-4 flex justify-between gap-2 border-t pt-4">
                         <Button
                           type="button"
                           onClick={() => {
@@ -439,7 +440,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                           variant={
                             completedEntries.has(index) ? "ghost" : "default"
                           }
-                          className="flex-1 min-h-[44px]"
+                          className="min-h-[44px] flex-1"
                           disabled={
                             !watchedEntries[index]?.workerName ||
                             (typeof watchedEntries[index]?.workerName ===
@@ -450,12 +451,12 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                         >
                           {completedEntries.has(index) ? (
                             <div className="flex items-center">
-                              <Check className="h-4 w-4 mr-2" />
+                              <Check className="mr-2 h-4 w-4" />
                               Inserted
                             </div>
                           ) : (
                             <div className="flex items-center">
-                              <Plus className="h-4 w-4 mr-2" />
+                              <Plus className="mr-2 h-4 w-4" />
                               Add to Bill
                             </div>
                           )}
@@ -493,8 +494,8 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
               </div>
             </div>
 
-            <div className="bg-primary/10 p-4 rounded-lg border-2 border-primary">
-              <div className="flex justify-between items-center">
+            <div className="bg-primary/10 border-primary rounded-lg border-2 p-4">
+              <div className="flex items-center justify-between">
                 <span className="text-lg font-semibold">Grand Total (Tk):</span>
                 <span className="text-2xl font-bold">
                   {totalTk.toLocaleString("en-BD")}
@@ -522,7 +523,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
             (e) =>
               e.workerName &&
               typeof e.workerName === "string" &&
-              e.workerName.trim().length > 0
+              e.workerName.trim().length > 0,
           );
           return validEntries.length > 0 ? (
             <div className="mt-8">
@@ -539,10 +540,12 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                 preparedBy={preparedBy}
                 checkedBy={checkedBy}
                 approvedBy={approvedBy}
+                signatoryName={signatoryName}
                 onNotesChange={setNotes}
                 onPreparedByChange={setPreparedBy}
                 onCheckedByChange={setCheckedBy}
                 onApprovedByChange={setApprovedBy}
+                onSignatoryNameChange={setSignatoryName}
                 onSignatureChange={(index, signature) => {
                   const newSigs = [...signatures];
                   // Find the entry in validEntries at this index
@@ -550,7 +553,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                   if (entry) {
                     // Find the original index in watchedEntries
                     const originalIndex = watchedEntries.findIndex(
-                      (e) => e.workerName === entry.workerName
+                      (e) => e.workerName === entry.workerName,
                     );
                     if (originalIndex >= 0) {
                       newSigs[originalIndex] = signature;
@@ -569,7 +572,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                   if (entry) {
                     // Find the original index in watchedEntries
                     const originalIndex = watchedEntries.findIndex(
-                      (e) => e.workerName === entry.workerName
+                      (e) => e.workerName === entry.workerName,
                     );
                     if (originalIndex >= 0) {
                       newStatuses[originalIndex] = paymentStatus;
