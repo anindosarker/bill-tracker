@@ -23,7 +23,7 @@ import {
 import { WorkerCombobox } from "@/components/worker-combobox";
 import { useBillAction } from "@/hooks/actions/useBillAction";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2 } from "lucide-react";
+import { Check, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -80,6 +80,9 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   const [approvedBy, setApprovedBy] = useState(initialData?.approvedBy || "");
   const [signatures, setSignatures] = useState<string[]>(
     initialData?.entries?.map((e) => e.signature || "") || []
+  );
+  const [completedEntries, setCompletedEntries] = useState<Set<number>>(
+    new Set()
   );
 
   const form = useForm<BillFormValues>({
@@ -222,19 +225,8 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
 
                   return (
                     <Card key={field.id} className="p-4">
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="mb-4">
                         <h4 className="font-medium">Worker {index + 1}</h4>
-                        {fields.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => remove(index)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -401,17 +393,71 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                         </div>
                       </div>
 
-                      {/* Add Worker button below each entry */}
-                      <div className="mt-4 pt-4 border-t">
+                      {/* Action buttons at the bottom */}
+                      <div className="mt-4 pt-4 border-t flex gap-2 justify-between">
                         <Button
+                          type="button"
+                          onClick={() => {
+                            const newCompleted = new Set(completedEntries);
+                            if (completedEntries.has(index)) {
+                              newCompleted.delete(index);
+                            } else {
+                              newCompleted.add(index);
+                              // Automatically add a new worker entry when marked as done
+                              addWorkerEntry();
+                            }
+                            setCompletedEntries(newCompleted);
+                          }}
+                          variant={
+                            completedEntries.has(index) ? "ghost" : "default"
+                          }
+                          className="flex-1 min-h-[44px]"
+                          disabled={
+                            !watchedEntries[index]?.workerName ||
+                            (typeof watchedEntries[index]?.workerName ===
+                              "string" &&
+                              watchedEntries[index]?.workerName.trim()
+                                .length === 0)
+                          }
+                        >
+                          {completedEntries.has(index) ? (
+                            <div className="flex items-center">
+                              <Check className="h-4 w-4 mr-2" />
+                              Inserted
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add to Bill
+                            </div>
+                          )}
+                        </Button>
+                        {/* <Button
                           type="button"
                           onClick={addWorkerEntry}
                           variant="default"
-                          className="w-full min-h-[44px]"
+                          className="min-h-[44px]"
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           Add Worker
-                        </Button>
+                        </Button> */}
+                        {fields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              const newCompleted = new Set(completedEntries);
+                              newCompleted.delete(index);
+                              setCompletedEntries(newCompleted);
+                              remove(index);
+                            }}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            size="lg"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Remove entry
+                          </Button>
+                        )}
                       </div>
                     </Card>
                   );
@@ -443,8 +489,12 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
 
         {/* Live Preview */}
         {(() => {
+          // Show preview if there's at least one entry with a worker name
           const validEntries = previewEntries.filter(
-            (e) => e.workerName && e.workerName.trim()
+            (e) =>
+              e.workerName &&
+              typeof e.workerName === "string" &&
+              e.workerName.trim().length > 0
           );
           return validEntries.length > 0 ? (
             <div className="mt-8">
