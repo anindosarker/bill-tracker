@@ -1,8 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { Check, ChevronsUpDown, Plus } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -17,8 +14,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type { IWorker } from "@/types/worker.types";
 import { useWorkerAction } from "@/hooks/actions/useWorkerAction";
+import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
+import * as React from "react";
 
 interface WorkerComboboxProps {
   value: string;
@@ -39,14 +38,14 @@ export function WorkerCombobox({
   const filteredWorkers = React.useMemo(() => {
     if (!searchQuery.trim()) return workers;
     return workers.filter((worker) =>
-      worker.name.toLowerCase().includes(searchQuery.toLowerCase())
+      worker.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [workers, searchQuery]);
 
   const showCreateOption =
     searchQuery.trim() &&
     !filteredWorkers.some(
-      (w) => w.name.toLowerCase() === searchQuery.toLowerCase()
+      (w) => w.name.toLowerCase() === searchQuery.toLowerCase(),
     );
 
   const handleCreateWorker = async () => {
@@ -80,17 +79,19 @@ export function WorkerCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between min-h-[44px]"
+          className="min-h-[44px] w-full justify-between"
           disabled={disabled || isLoading}
         >
           {value
-            ? workers.find((worker) => worker.name === value)?.name ||
-              value
+            ? workers.find((worker) => worker.name === value)?.name || value
             : "Select or type worker name..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
+      >
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search or type new worker name..."
@@ -105,14 +106,14 @@ export function WorkerCombobox({
               <CommandGroup heading="Workers">
                 {filteredWorkers.map((worker) => (
                   <CommandItem
-                    key={worker._id}
+                    key={worker._id.toString()}
                     value={worker.name}
                     onSelect={handleSelect}
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        value === worker.name ? "opacity-100" : "opacity-0"
+                        value === worker.name ? "opacity-100" : "opacity-0",
                       )}
                     />
                     {worker.name}
@@ -128,7 +129,7 @@ export function WorkerCombobox({
                   className="text-primary font-medium"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Create "{searchQuery}"
+                  Create &quot;{searchQuery}&quot;
                 </CommandItem>
               </CommandGroup>
             )}
