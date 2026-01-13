@@ -2,6 +2,7 @@
 
 import { billServiceFrontend } from "@/lib/services/bill.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { IBillEntry } from "@/backend/models/bill.model";
 
 export const BILL_KEYS = {
   all: ["bills"] as const,
@@ -25,14 +26,13 @@ export function useBillAction() {
     }: {
       id: string;
       data: {
-        workerName: string;
-        workingHours: number;
-        wagePerHour: number;
-        overtimeHours: number;
-        overtimeWagePerHour: number;
-        paymentStatus: string;
+        entries: IBillEntry[];
+        duration?: string;
+        notes?: string;
+        preparedBy?: string;
+        checkedBy?: string;
+        approvedBy?: string;
         totalTk: number;
-        signature?: string;
       };
     }) => billServiceFrontend.updateBill(id, data),
     onSuccess: (data, variables) => {

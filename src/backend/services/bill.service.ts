@@ -1,16 +1,15 @@
 import dbConnect from "../lib/db";
-import Bill, { IBill, IBillVersion } from "../models/bill.model";
+import Bill, { IBill, IBillEntry, IBillVersion } from "../models/bill.model";
 
 export class BillService {
   async createBill(data: {
-    workerName: string;
-    workingHours: number;
-    wagePerHour: number;
-    overtimeHours: number;
-    overtimeWagePerHour: number;
-    paymentStatus: string;
+    entries: IBillEntry[];
+    duration?: string;
+    notes?: string;
+    preparedBy?: string;
+    checkedBy?: string;
+    approvedBy?: string;
     totalTk: number;
-    signature?: string;
   }) {
     await dbConnect();
     const bill = await Bill.create(data);
@@ -30,14 +29,13 @@ export class BillService {
   async updateBill(
     id: string,
     data: {
-      workerName: string;
-      workingHours: number;
-      wagePerHour: number;
-      overtimeHours: number;
-      overtimeWagePerHour: number;
-      paymentStatus: string;
+      entries: IBillEntry[];
+      duration?: string;
+      notes?: string;
+      preparedBy?: string;
+      checkedBy?: string;
+      approvedBy?: string;
       totalTk: number;
-      signature?: string;
     }
   ) {
     await dbConnect();
@@ -49,14 +47,13 @@ export class BillService {
 
     // Save current version before updating
     const previousVersion: IBillVersion = {
-      workerName: bill.workerName,
-      workingHours: bill.workingHours,
-      wagePerHour: bill.wagePerHour,
-      overtimeHours: bill.overtimeHours,
-      overtimeWagePerHour: bill.overtimeWagePerHour,
-      paymentStatus: bill.paymentStatus,
+      entries: bill.entries,
+      duration: bill.duration,
+      notes: bill.notes,
+      preparedBy: bill.preparedBy,
+      checkedBy: bill.checkedBy,
+      approvedBy: bill.approvedBy,
       totalTk: bill.totalTk,
-      signature: bill.signature,
       updatedAt: bill.updatedAt,
     };
 

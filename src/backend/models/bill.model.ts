@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-export interface IBillVersion {
+export interface IBillEntry {
   workerName: string;
   workingHours: number;
   wagePerHour: number;
@@ -9,24 +9,33 @@ export interface IBillVersion {
   paymentStatus: string;
   totalTk: number;
   signature?: string;
+}
+
+export interface IBillVersion {
+  entries: IBillEntry[];
+  duration?: string;
+  notes?: string;
+  preparedBy?: string;
+  checkedBy?: string;
+  approvedBy?: string;
+  totalTk: number;
   updatedAt: Date;
 }
 
 export interface IBill extends Document {
-  workerName: string;
-  workingHours: number;
-  wagePerHour: number;
-  overtimeHours: number;
-  overtimeWagePerHour: number;
-  paymentStatus: string;
+  entries: IBillEntry[];
+  duration?: string;
+  notes?: string;
+  preparedBy?: string;
+  checkedBy?: string;
+  approvedBy?: string;
   totalTk: number;
-  signature?: string;
   versions: IBillVersion[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-const BillVersionSchema = new Schema<IBillVersion>(
+const BillEntrySchema = new Schema<IBillEntry>(
   {
     workerName: { type: String, required: true },
     workingHours: { type: Number, required: true },
@@ -36,6 +45,19 @@ const BillVersionSchema = new Schema<IBillVersion>(
     paymentStatus: { type: String, default: "cash" },
     totalTk: { type: Number, required: true },
     signature: { type: String },
+  },
+  { _id: false }
+);
+
+const BillVersionSchema = new Schema<IBillVersion>(
+  {
+    entries: { type: [BillEntrySchema], required: true },
+    duration: { type: String },
+    notes: { type: String },
+    preparedBy: { type: String },
+    checkedBy: { type: String },
+    approvedBy: { type: String },
+    totalTk: { type: Number, required: true },
     updatedAt: { type: Date, default: Date.now },
   },
   { _id: false }
@@ -43,14 +65,13 @@ const BillVersionSchema = new Schema<IBillVersion>(
 
 const BillSchema = new Schema<IBill>(
   {
-    workerName: { type: String, required: true },
-    workingHours: { type: Number, required: true },
-    wagePerHour: { type: Number, required: true },
-    overtimeHours: { type: Number, default: 0 },
-    overtimeWagePerHour: { type: Number, default: 0 },
-    paymentStatus: { type: String, default: "cash" },
+    entries: { type: [BillEntrySchema], required: true },
+    duration: { type: String },
+    notes: { type: String },
+    preparedBy: { type: String },
+    checkedBy: { type: String },
+    approvedBy: { type: String },
     totalTk: { type: Number, required: true },
-    signature: { type: String },
     versions: { type: [BillVersionSchema], default: [] },
   },
   { timestamps: true }

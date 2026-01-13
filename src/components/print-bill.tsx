@@ -14,7 +14,7 @@ export function PrintBill({ bill }: PrintBillProps) {
     window.print();
   };
 
-  // Convert number to words (simple implementation)
+  // Convert number to words
   const numberToWords = (num: number): string => {
     const ones = [
       "",
@@ -89,95 +89,122 @@ export function PrintBill({ bill }: PrintBillProps) {
   const amountInWords = numberToWords(Math.floor(bill.totalTk));
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       <div className="mb-6 flex justify-end print:hidden">
-        <Button onClick={handlePrint}>
+        <Button onClick={handlePrint} className="min-h-[44px]">
           <Printer className="h-4 w-4 mr-2" />
           Print
         </Button>
       </div>
 
       <div className="bg-white p-8 print:p-4">
+        {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-2">
+          <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "Times New Roman" }}>
             INDEPENDENT AGRISCIENCE FACTORY
           </h1>
-          <h2 className="text-lg font-semibold mb-1">
+          <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: "Times New Roman" }}>
             RANIRHAT, SAHJAHANPUR, BOGURA
           </h2>
-          <p className="text-sm">(WORKER WAGES Payment Sheet)</p>
-        </div>
-
-        <div className="mb-6">
-          <p className="text-center text-sm mb-4">
-            Date: {format(new Date(bill.createdAt), "dd/MM/yyyy")}
+          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
+            (WORKER WAGES Payment Sheet)
           </p>
         </div>
 
-        <table className="w-full border-collapse border border-black mb-6">
+        {/* Date */}
+        <div className="flex justify-end mb-4">
+          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
+            {format(new Date(bill.createdAt), "dd/MM/yyyy")}
+          </p>
+        </div>
+
+        {/* Table */}
+        <table className="w-full border-collapse border border-black mb-6" style={{ fontFamily: "Times New Roman" }}>
           <thead>
             <tr>
-              <th className="border border-black p-2 text-left">Worker Name</th>
-              <th className="border border-black p-2 text-center">
-                Working Hour
-              </th>
-              <th className="border border-black p-2 text-center">
-                Wages per Hour (Tk)
-              </th>
-              <th className="border border-black p-2 text-center">
-                Over time (Hour)
-              </th>
-              <th className="border border-black p-2 text-center">
-                Over time per Hour (Tk)
-              </th>
-              <th className="border border-black p-2 text-center">
-                Payment status
-              </th>
-              <th className="border border-black p-2 text-center">Total tk.</th>
-              <th className="border border-black p-2 text-center">Signature</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Sl.No.</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Worker Name</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Working Hour</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Wages per Hour (Tk)</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Over time (Hour)</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Over time per Hour (Tk)</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Payment status</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Total tk.</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Signature</th>
             </tr>
           </thead>
           <tbody>
+            {bill.entries.map((entry, index) => (
+              <tr key={index}>
+                <td className="border border-black p-2 text-center">{index + 1}</td>
+                <td className="border border-black p-2 text-left">{entry.workerName}</td>
+                <td className="border border-black p-2 text-center">{entry.workingHours}</td>
+                <td className="border border-black p-2 text-center">{entry.wagePerHour}</td>
+                <td className="border border-black p-2 text-center">{entry.overtimeHours}</td>
+                <td className="border border-black p-2 text-center">{entry.overtimeWagePerHour}</td>
+                <td className="border border-black p-2 text-center">{entry.paymentStatus}</td>
+                <td className="border border-black p-2 text-center">{entry.totalTk.toLocaleString("en-BD")}</td>
+                <td className="border border-black p-2 min-h-[44px]">{entry.signature || ""}</td>
+              </tr>
+            ))}
+            {/* Total Row */}
             <tr>
-              <td className="border border-black p-2">{bill.workerName}</td>
-              <td className="border border-black p-2 text-center">
-                {bill.workingHours}
+              <td className="border border-black p-2"></td>
+              <td className="border border-black p-2 font-bold" colSpan={6}>
+                Total
               </td>
-              <td className="border border-black p-2 text-center">
-                {bill.wagePerHour}
-              </td>
-              <td className="border border-black p-2 text-center">
-                {bill.overtimeHours}
-              </td>
-              <td className="border border-black p-2 text-center">
-                {bill.overtimeWagePerHour}
-              </td>
-              <td className="border border-black p-2 text-center">
-                {bill.paymentStatus}
-              </td>
-              <td className="border border-black p-2 text-center">
+              <td className="border border-black p-2 text-center font-bold">
                 {bill.totalTk.toLocaleString("en-BD")}
               </td>
-              <td className="border border-black p-2 min-h-[60px]">
-                {bill.signature || ""}
-              </td>
+              <td className="border border-black p-2"></td>
             </tr>
           </tbody>
         </table>
 
-        <div className="mb-4">
-          <p className="text-sm">
+        {/* Notes Section */}
+        {bill.notes && (
+          <div className="mb-4">
+            <p className="text-sm" style={{ fontFamily: "Arial" }}>
+              {bill.notes}
+            </p>
+          </div>
+        )}
+
+        {/* In Words */}
+        <div className="mb-6">
+          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
             <strong>In Words:</strong> {amountInWords} taka only
           </p>
         </div>
 
-        <div className="mt-8 flex justify-between text-sm">
-          <div>
-            <p>Prepared by</p>
+        {/* Footer */}
+        <div className="mt-8 space-y-4">
+          <div className="flex justify-between text-sm">
+            <div>
+              <p style={{ fontFamily: "Times New Roman" }}>Prepared by</p>
+              {bill.preparedBy && (
+                <p style={{ fontFamily: "Arial" }}>({bill.preparedBy})</p>
+              )}
+            </div>
+            <div className="text-right">
+              <p style={{ fontFamily: "Arial" }}>For, Independent Agriscience Factory</p>
+              <p className="mt-4" style={{ fontFamily: "Times New Roman" }}>Bogura</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p>For, Independent Agriscience Factory</p>
-            <p className="mt-4">Bogura</p>
+
+          <div className="flex justify-center gap-8 mt-6 text-sm">
+            <div>
+              <p style={{ fontFamily: "Arial" }}>Checked by:</p>
+              {bill.checkedBy && (
+                <p style={{ fontFamily: "Arial" }}>{bill.checkedBy}</p>
+              )}
+            </div>
+            <div>
+              <p style={{ fontFamily: "Arial" }}>Approved by:</p>
+              {bill.approvedBy && (
+                <p style={{ fontFamily: "Arial" }}>{bill.approvedBy}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

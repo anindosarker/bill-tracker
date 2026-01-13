@@ -21,28 +21,26 @@ export function EditBillClient({ bill, billId }: EditBillClientProps) {
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <Link href="/bills">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="min-h-[44px]">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Bills
             </Button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
             <BillForm
               billId={billId}
               initialData={{
-                workerName: bill.workerName,
-                workingHours: bill.workingHours,
-                wagePerHour: bill.wagePerHour,
-                overtimeHours: bill.overtimeHours,
-                overtimeWagePerHour: bill.overtimeWagePerHour,
-                paymentStatus: bill.paymentStatus,
-                signature: bill.signature || "",
+                entries: bill.entries,
+                notes: bill.notes || "",
+                preparedBy: bill.preparedBy || "",
+                checkedBy: bill.checkedBy || "",
+                approvedBy: bill.approvedBy || "",
               }}
               onSuccess={() => {
-                router.push(`/bills/${billId}`);
+                router.push(`/bills/${billId}/print`);
               }}
             />
           </div>

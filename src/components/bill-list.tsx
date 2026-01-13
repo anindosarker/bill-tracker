@@ -48,7 +48,9 @@ export function BillList() {
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
-                <CardTitle className="text-xl">{bill.workerName}</CardTitle>
+                <CardTitle className="text-xl">
+                  Bill - {bill.entries.length} worker{bill.entries.length !== 1 ? "s" : ""}
+                </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   {format(new Date(bill.createdAt), "PPp")}
                 </p>
@@ -76,30 +78,29 @@ export function BillList() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Working Hours</p>
-                <p className="font-semibold">{bill.workingHours}</p>
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Workers</p>
+                  <p className="font-semibold">{bill.entries.length}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Total Entries</p>
+                  <p className="font-semibold">{bill.entries.length}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Grand Total</p>
+                  <p className="font-semibold text-lg">
+                    {bill.totalTk.toLocaleString("en-BD")} Tk
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Status</p>
+                  <p className="font-semibold">
+                    {bill.entries[0]?.paymentStatus || "N/A"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-muted-foreground">Wage/Hour</p>
-                <p className="font-semibold">{bill.wagePerHour} Tk</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Overtime</p>
-                <p className="font-semibold">{bill.overtimeHours} hrs</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Total</p>
-                <p className="font-semibold text-lg">
-                  {bill.totalTk.toLocaleString("en-BD")} Tk
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                Payment: <span className="font-medium">{bill.paymentStatus}</span>
-              </p>
             </div>
           </CardContent>
         </Card>

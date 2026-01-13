@@ -1,0 +1,599 @@
+"use client";
+
+import { IBillEntry } from "@/backend/models/bill.model";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Printer, Edit2, Save, X, Check } from "lucide-react";
+import { format } from "date-fns";
+import { useState, useEffect } from "react";
+
+interface BillPreviewProps {
+  entries: IBillEntry[];
+  totalTk: number;
+  notes?: string;
+  preparedBy?: string;
+  checkedBy?: string;
+  approvedBy?: string;
+  onNotesChange?: (notes: string) => void;
+  onPreparedByChange?: (name: string) => void;
+  onCheckedByChange?: (name: string) => void;
+  onApprovedByChange?: (name: string) => void;
+  onSignatureChange?: (index: number, signature: string) => void;
+  onPrint?: () => void;
+  onSave?: () => void;
+  isSaving?: boolean;
+}
+
+export function BillPreview({
+  entries,
+  totalTk,
+  notes = "",
+  preparedBy = "",
+  checkedBy = "",
+  approvedBy = "",
+  onNotesChange,
+  onPreparedByChange,
+  onCheckedByChange,
+  onApprovedByChange,
+  onSignatureChange,
+  onPrint,
+  onSave,
+  isSaving = false,
+}: BillPreviewProps) {
+  // Individual edit states for each field
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [editingPreparedBy, setEditingPreparedBy] = useState(false);
+  const [editingCheckedBy, setEditingCheckedBy] = useState(false);
+  const [editingApprovedBy, setEditingApprovedBy] = useState(false);
+  const [editingSignatures, setEditingSignatures] = useState<Set<number>>(new Set());
+  
+  // Local state for each field
+  const [localNotes, setLocalNotes] = useState(notes);
+  const [localPreparedBy, setLocalPreparedBy] = useState(preparedBy);
+  const [localCheckedBy, setLocalCheckedBy] = useState(checkedBy);
+  const [localApprovedBy, setLocalApprovedBy] = useState(approvedBy);
+  const [localSignatures, setLocalSignatures] = useState<string[]>(
+    entries.map((e) => e.signature || "")
+  );
+
+  // Update local state when props change
+  useEffect(() => {
+    setLocalNotes(notes);
+  }, [notes]);
+  useEffect(() => {
+    setLocalPreparedBy(preparedBy);
+  }, [preparedBy]);
+  useEffect(() => {
+    setLocalCheckedBy(checkedBy);
+  }, [checkedBy]);
+  useEffect(() => {
+    setLocalApprovedBy(approvedBy);
+  }, [approvedBy]);
+  useEffect(() => {
+    setLocalSignatures(entries.map((e) => e.signature || ""));
+  }, [entries]);
+
+  const handlePrint = () => {
+    if (onPrint) {
+      onPrint();
+    } else {
+      window.print();
+    }
+  };
+
+  // Save all pending changes and the bill
+  const handleSaveBill = () => {
+    // Save all individual field changes
+    if (onNotesChange) onNotesChange(localNotes);
+    if (onPreparedByChange) onPreparedByChange(localPreparedBy);
+    if (onCheckedByChange) onCheckedByChange(localCheckedBy);
+    if (onApprovedByChange) onApprovedByChange(localApprovedBy);
+    localSignatures.forEach((sig, idx) => {
+      if (onSignatureChange) onSignatureChange(idx, sig);
+    });
+    // Save the bill
+    if (onSave) onSave();
+  };
+
+  // Individual field save handlers
+  const handleSaveNotes = () => {
+    if (onNotesChange) onNotesChange(localNotes);
+    setEditingNotes(false);
+  };
+
+  const handleCancelNotes = () => {
+    setLocalNotes(notes);
+    setEditingNotes(false);
+  };
+
+  const handleSavePreparedBy = () => {
+    if (onPreparedByChange) onPreparedByChange(localPreparedBy);
+    setEditingPreparedBy(false);
+  };
+
+  const handleCancelPreparedBy = () => {
+    setLocalPreparedBy(preparedBy);
+    setEditingPreparedBy(false);
+  };
+
+  const handleSaveCheckedBy = () => {
+    if (onCheckedByChange) onCheckedByChange(localCheckedBy);
+    setEditingCheckedBy(false);
+  };
+
+  const handleCancelCheckedBy = () => {
+    setLocalCheckedBy(checkedBy);
+    setEditingCheckedBy(false);
+  };
+
+  const handleSaveApprovedBy = () => {
+    if (onApprovedByChange) onApprovedByChange(localApprovedBy);
+    setEditingApprovedBy(false);
+  };
+
+  const handleCancelApprovedBy = () => {
+    setLocalApprovedBy(approvedBy);
+    setEditingApprovedBy(false);
+  };
+
+  const handleSaveSignature = (index: number) => {
+    if (onSignatureChange) onSignatureChange(index, localSignatures[index] || "");
+    const newEditing = new Set(editingSignatures);
+    newEditing.delete(index);
+    setEditingSignatures(newEditing);
+  };
+
+  const handleCancelSignature = (index: number) => {
+    const originalSig = entries[index]?.signature || "";
+    const newSigs = [...localSignatures];
+    newSigs[index] = originalSig;
+    setLocalSignatures(newSigs);
+    const newEditing = new Set(editingSignatures);
+    newEditing.delete(index);
+    setEditingSignatures(newEditing);
+  };
+
+  // Convert number to words
+  const numberToWords = (num: number): string => {
+    const ones = [
+      "",
+      "one",
+      "two",
+      "three",
+      "four",
+      "five",
+      "six",
+      "seven",
+      "eight",
+      "nine",
+    ];
+    const tens = [
+      "",
+      "",
+      "twenty",
+      "thirty",
+      "forty",
+      "fifty",
+      "sixty",
+      "seventy",
+      "eighty",
+      "ninety",
+    ];
+    const teens = [
+      "ten",
+      "eleven",
+      "twelve",
+      "thirteen",
+      "fourteen",
+      "fifteen",
+      "sixteen",
+      "seventeen",
+      "eighteen",
+      "nineteen",
+    ];
+
+    if (num === 0) return "zero";
+    if (num < 10) return ones[num];
+    if (num < 20) return teens[num - 10];
+    if (num < 100)
+      return (
+        tens[Math.floor(num / 10)] +
+        (num % 10 !== 0 ? " " + ones[num % 10] : "")
+      );
+    if (num < 1000)
+      return (
+        ones[Math.floor(num / 100)] +
+        " hundred" +
+        (num % 100 !== 0 ? " " + numberToWords(num % 100) : "")
+      );
+    if (num < 100000)
+      return (
+        numberToWords(Math.floor(num / 1000)) +
+        " thousand" +
+        (num % 1000 !== 0 ? " " + numberToWords(num % 1000) : "")
+      );
+    if (num < 10000000)
+      return (
+        numberToWords(Math.floor(num / 100000)) +
+        " lakh" +
+        (num % 100000 !== 0 ? " " + numberToWords(num % 100000) : "")
+      );
+    return (
+      numberToWords(Math.floor(num / 10000000)) +
+      " crore" +
+      (num % 10000000 !== 0 ? " " + numberToWords(num % 10000000) : "")
+    );
+  };
+
+  const amountInWords = numberToWords(Math.floor(totalTk));
+
+  return (
+    <div className="border-2 border-primary/20 rounded-lg p-6 bg-white" data-bill-preview>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-bold">Bill Preview</h3>
+        <div className="flex gap-2">
+          {onSave && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSaveBill}
+              disabled={isSaving}
+              className="min-h-[44px]"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {isSaving ? "Saving..." : "Save Bill"}
+            </Button>
+          )}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handlePrint}
+            className="min-h-[44px]"
+          >
+            <Printer className="h-4 w-4 mr-2" />
+            Print
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "Times New Roman" }}>
+            INDEPENDENT AGRISCIENCE FACTORY
+          </h1>
+          <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: "Times New Roman" }}>
+            RANIRHAT, SAHJAHANPUR, BOGURA
+          </h2>
+          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
+            (WORKER WAGES Payment Sheet)
+          </p>
+        </div>
+
+        {/* Date */}
+        <div className="flex justify-end mb-2">
+          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
+            {format(new Date(), "dd/MM/yyyy")}
+          </p>
+        </div>
+
+        {/* Table */}
+        <table className="w-full border-collapse border border-black" style={{ fontFamily: "Times New Roman" }}>
+          <thead>
+            <tr>
+              <th className="border border-black p-2 text-center font-bold text-sm">Sl.No.</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Worker Name</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Working Hour</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Wages per Hour (Tk)</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Over time (Hour)</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Over time per Hour (Tk)</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Payment status</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Total tk.</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">Signature</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry, index) => (
+              <tr key={index}>
+                <td className="border border-black p-2 text-center">{index + 1}</td>
+                <td className="border border-black p-2 text-left">{entry.workerName}</td>
+                <td className="border border-black p-2 text-center">{entry.workingHours}</td>
+                <td className="border border-black p-2 text-center">{entry.wagePerHour}</td>
+                <td className="border border-black p-2 text-center">{entry.overtimeHours}</td>
+                <td className="border border-black p-2 text-center">{entry.overtimeWagePerHour}</td>
+                <td className="border border-black p-2 text-center">{entry.paymentStatus}</td>
+                <td className="border border-black p-2 text-center">{entry.totalTk.toLocaleString("en-BD")}</td>
+                <td className="border border-black p-2">
+                  <div className="flex items-center gap-1">
+                    {editingSignatures.has(index) ? (
+                      <>
+                        <Input
+                          value={localSignatures[index] || ""}
+                          onChange={(e) => {
+                            const newSigs = [...localSignatures];
+                            newSigs[index] = e.target.value;
+                            setLocalSignatures(newSigs);
+                          }}
+                          placeholder="Signature"
+                          className="h-8 text-xs border-0 focus-visible:ring-1 flex-1"
+                          autoFocus
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleSaveSignature(index)}
+                        >
+                          <Check className="h-3 w-3 text-green-600" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleCancelSignature(index)}
+                        >
+                          <X className="h-3 w-3 text-red-600" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="min-h-[20px] block flex-1">{localSignatures[index] || ""}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => {
+                            const newEditing = new Set(editingSignatures);
+                            newEditing.add(index);
+                            setEditingSignatures(newEditing);
+                          }}
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {/* Total Row */}
+            <tr>
+              <td className="border border-black p-2"></td>
+              <td className="border border-black p-2 font-bold" colSpan={6}>
+                Total
+              </td>
+              <td className="border border-black p-2 text-center font-bold">
+                {totalTk.toLocaleString("en-BD")}
+              </td>
+              <td className="border border-black p-2"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Notes Section */}
+        <div>
+          <div className="flex items-start gap-2">
+            {editingNotes ? (
+              <>
+                <Textarea
+                  value={localNotes}
+                  onChange={(e) => setLocalNotes(e.target.value)}
+                  placeholder="Add notes (optional)"
+                  className="min-h-[60px] text-sm flex-1"
+                  style={{ fontFamily: "Arial" }}
+                  autoFocus
+                />
+                <div className="flex flex-col gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={handleSaveNotes}
+                  >
+                    <Check className="h-4 w-4 text-green-600" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={handleCancelNotes}
+                  >
+                    <X className="h-4 w-4 text-red-600" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm flex-1" style={{ fontFamily: "Arial" }}>
+                  {localNotes || "\u00A0"}
+                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setEditingNotes(true)}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* In Words */}
+        <div>
+          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
+            <strong>In Words:</strong> {amountInWords} taka only
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="space-y-4">
+          <div className="flex justify-between text-sm">
+            <div className="flex items-start gap-2">
+              <div className="flex-1">
+                <p style={{ fontFamily: "Times New Roman" }}>Prepared by</p>
+                {editingPreparedBy ? (
+                  <Input
+                    value={localPreparedBy}
+                    onChange={(e) => setLocalPreparedBy(e.target.value)}
+                    placeholder="Name"
+                    className="mt-1 h-8 text-xs"
+                    style={{ fontFamily: "Arial" }}
+                    autoFocus
+                  />
+                ) : (
+                  <p style={{ fontFamily: "Arial" }}>{localPreparedBy ? `(${localPreparedBy})` : ""}</p>
+                )}
+              </div>
+              {!editingPreparedBy ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 mt-1"
+                  onClick={() => setEditingPreparedBy(true)}
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              ) : (
+                <div className="flex flex-col gap-1 mt-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={handleSavePreparedBy}
+                  >
+                    <Check className="h-3 w-3 text-green-600" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={handleCancelPreparedBy}
+                  >
+                    <X className="h-3 w-3 text-red-600" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="text-right">
+              <p style={{ fontFamily: "Arial" }}>For, Independent Agriscience Factory</p>
+              <p className="mt-4" style={{ fontFamily: "Times New Roman" }}>Bogura</p>
+            </div>
+          </div>
+
+          <div className="flex justify-center gap-8 text-sm">
+            <div className="flex items-start gap-2">
+              <div>
+                <p style={{ fontFamily: "Arial" }}>Checked by:</p>
+                {editingCheckedBy ? (
+                  <Input
+                    value={localCheckedBy}
+                    onChange={(e) => setLocalCheckedBy(e.target.value)}
+                    placeholder="Name"
+                    className="mt-1 h-8 text-xs w-32"
+                    style={{ fontFamily: "Arial" }}
+                    autoFocus
+                  />
+                ) : (
+                  <p style={{ fontFamily: "Arial" }}>{localCheckedBy || ""}</p>
+                )}
+              </div>
+              {!editingCheckedBy ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 mt-1"
+                  onClick={() => setEditingCheckedBy(true)}
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              ) : (
+                <div className="flex flex-col gap-1 mt-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={handleSaveCheckedBy}
+                  >
+                    <Check className="h-3 w-3 text-green-600" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={handleCancelCheckedBy}
+                  >
+                    <X className="h-3 w-3 text-red-600" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="flex items-start gap-2">
+              <div>
+                <p style={{ fontFamily: "Arial" }}>Approved by:</p>
+                {editingApprovedBy ? (
+                  <Input
+                    value={localApprovedBy}
+                    onChange={(e) => setLocalApprovedBy(e.target.value)}
+                    placeholder="Name"
+                    className="mt-1 h-8 text-xs w-32"
+                    style={{ fontFamily: "Arial" }}
+                    autoFocus
+                  />
+                ) : (
+                  <p style={{ fontFamily: "Arial" }}>{localApprovedBy || ""}</p>
+                )}
+              </div>
+              {!editingApprovedBy ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 mt-1"
+                  onClick={() => setEditingApprovedBy(true)}
+                >
+                  <Edit2 className="h-3 w-3" />
+                </Button>
+              ) : (
+                <div className="flex flex-col gap-1 mt-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={handleSaveApprovedBy}
+                  >
+                    <Check className="h-3 w-3 text-green-600" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={handleCancelApprovedBy}
+                  >
+                    <X className="h-3 w-3 text-red-600" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

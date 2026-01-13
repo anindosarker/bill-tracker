@@ -2,16 +2,16 @@
 
 import { billService } from "@/backend/services/bill.service";
 import { revalidatePath } from "next/cache";
+import { IBillEntry } from "@/backend/models/bill.model";
 
 export async function createBill(data: {
-  workerName: string;
-  workingHours: number;
-  wagePerHour: number;
-  overtimeHours: number;
-  overtimeWagePerHour: number;
-  paymentStatus: string;
+  entries: IBillEntry[];
+  duration?: string;
+  notes?: string;
+  preparedBy?: string;
+  checkedBy?: string;
+  approvedBy?: string;
   totalTk: number;
-  signature?: string;
 }) {
   try {
     const bill = await billService.createBill(data);
@@ -53,14 +53,13 @@ export async function getBill(id: string) {
 export async function updateBill(
   id: string,
   data: {
-    workerName: string;
-    workingHours: number;
-    wagePerHour: number;
-    overtimeHours: number;
-    overtimeWagePerHour: number;
-    paymentStatus: string;
+    entries: IBillEntry[];
+    duration?: string;
+    notes?: string;
+    preparedBy?: string;
+    checkedBy?: string;
+    approvedBy?: string;
     totalTk: number;
-    signature?: string;
   }
 ) {
   try {

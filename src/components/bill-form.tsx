@@ -1,9 +1,9 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { IBillEntry } from "@/backend/models/bill.model";
+import { BillPreview } from "@/components/bill-preview";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -20,35 +20,51 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WorkerCombobox } from "@/components/worker-combobox";
 import { useBillAction } from "@/hooks/actions/useBillAction";
-import { useWorkerAction } from "@/hooks/actions/useWorkerAction";
-import { useEffect, useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Printer } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import * as z from "zod";
+
+const billEntrySchema = z.object({
+  workerName: z.string().min(1, "Worker name is required"),
+  workingHours: z.preprocess((val) => {
+    if (val === "" || val === undefined || val === null) return undefined;
+    return Number(val);
+  }, z.number().min(0, "Working hours must be positive").optional()),
+  wagePerHour: z.preprocess((val) => {
+    if (val === "" || val === undefined || val === null) return undefined;
+    return Number(val);
+  }, z.number().min(0, "Wage per hour must be positive").optional()),
+  overtimeHours: z.preprocess((val) => {
+    if (val === "" || val === undefined || val === null) return 0;
+    return Number(val);
+  }, z.number().min(0).default(0)),
+  overtimeWagePerHour: z.preprocess((val) => {
+    if (val === "" || val === undefined || val === null) return 0;
+    return Number(val);
+  }, z.number().min(0).default(0)),
+  paymentStatus: z.string().default("cash"),
+});
 
 const billFormSchema = z.object({
-  workerName: z.string().min(1, "Worker name is required"),
-  workingHours: z.coerce.number().min(0, "Working hours must be positive"),
-  wagePerHour: z.coerce.number().min(0, "Wage per hour must be positive"),
-  overtimeHours: z.coerce.number().min(0).default(0),
-  overtimeWagePerHour: z.coerce.number().min(0).default(0),
-  paymentStatus: z.string().default("cash"),
-  signature: z.string().optional(),
+  entries: z
+    .array(billEntrySchema)
+    .min(1, "At least one worker entry is required"),
 });
 
 type BillFormValues = z.infer<typeof billFormSchema>;
 
 interface BillFormProps {
   initialData?: {
-    workerName: string;
-    workingHours: number;
-    wagePerHour: number;
-    overtimeHours: number;
-    overtimeWagePerHour: number;
-    paymentStatus: string;
-    signature?: string;
+    entries: IBillEntry[];
+    notes?: string;
+    preparedBy?: string;
+    checkedBy?: string;
+    approvedBy?: string;
   };
   billId?: string;
   onSuccess?: () => void;
@@ -57,76 +73,132 @@ interface BillFormProps {
 export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   const router = useRouter();
   const { createBillMutation, updateBillMutation } = useBillAction();
-  const { useWorkersQuery, createWorkerMutation } = useWorkerAction();
-  const { data: workers = [], isLoading: workersLoading } = useWorkersQuery();
-  const [newWorkerName, setNewWorkerName] = useState("");
+
+  const [notes, setNotes] = useState(initialData?.notes || "");
+  const [preparedBy, setPreparedBy] = useState(initialData?.preparedBy || "");
+  const [checkedBy, setCheckedBy] = useState(initialData?.checkedBy || "");
+  const [approvedBy, setApprovedBy] = useState(initialData?.approvedBy || "");
+  const [signatures, setSignatures] = useState<string[]>(
+    initialData?.entries?.map((e) => e.signature || "") || []
+  );
 
   const form = useForm<BillFormValues>({
     resolver: zodResolver(billFormSchema),
     defaultValues: initialData || {
-      workerName: "",
-      workingHours: 0,
-      wagePerHour: 0,
-      overtimeHours: 0,
-      overtimeWagePerHour: 0,
-      paymentStatus: "cash",
-      signature: "",
+      entries: [
+        {
+          workerName: "",
+          workingHours: undefined,
+          wagePerHour: undefined,
+          overtimeHours: undefined,
+          overtimeWagePerHour: undefined,
+          paymentStatus: "cash",
+        },
+      ],
     },
   });
 
-  const watchedValues = form.watch();
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "entries",
+  });
+
+  const watchedEntries = form.watch("entries");
+
+  // Update signatures array when entries change
+  useMemo(() => {
+    if (watchedEntries.length !== signatures.length) {
+      setSignatures(watchedEntries.map((_, idx) => signatures[idx] || ""));
+    }
+  }, [watchedEntries.length]);
 
   const totalTk = useMemo(() => {
-    const regularPay =
-      (watchedValues.workingHours || 0) * (watchedValues.wagePerHour || 0);
-    const overtimePay =
-      (watchedValues.overtimeHours || 0) *
-      (watchedValues.overtimeWagePerHour || 0);
-    return regularPay + overtimePay;
-  }, [
-    watchedValues.workingHours,
-    watchedValues.wagePerHour,
-    watchedValues.overtimeHours,
-    watchedValues.overtimeWagePerHour,
-  ]);
+    return watchedEntries.reduce((sum, entry) => {
+      const regularPay = (entry.workingHours || 0) * (entry.wagePerHour || 0);
+      const overtimePay =
+        (entry.overtimeHours || 0) * (entry.overtimeWagePerHour || 0);
+      return sum + regularPay + overtimePay;
+    }, 0);
+  }, [watchedEntries]);
 
-  const handleAddWorker = async () => {
-    if (!newWorkerName.trim()) return;
-    await createWorkerMutation.mutateAsync(newWorkerName.trim());
-    setNewWorkerName("");
+  // Calculate entries with totals for preview
+  const previewEntries = useMemo(() => {
+    return watchedEntries.map((entry, index) => {
+      const regularPay = (entry.workingHours || 0) * (entry.wagePerHour || 0);
+      const overtimePay =
+        (entry.overtimeHours || 0) * (entry.overtimeWagePerHour || 0);
+      return {
+        ...entry,
+        totalTk: regularPay + overtimePay,
+        signature: signatures[index] || "",
+      };
+    });
+  }, [watchedEntries, signatures]);
+
+  const addWorkerEntry = () => {
+    append({
+      workerName: "",
+      workingHours: undefined,
+      wagePerHour: undefined,
+      overtimeHours: undefined,
+      overtimeWagePerHour: undefined,
+      paymentStatus: "cash",
+    });
   };
 
-  const onSubmit = async (data: BillFormValues) => {
+  const handleSave = async () => {
     try {
+      const entries: IBillEntry[] = watchedEntries.map((entry, index) => {
+        const regularPay = entry.workingHours * entry.wagePerHour;
+        const overtimePay = entry.overtimeHours * entry.overtimeWagePerHour;
+        return {
+          ...entry,
+          totalTk: regularPay + overtimePay,
+          signature: signatures[index] || undefined,
+        };
+      });
+
+      const billData = {
+        entries,
+        notes: notes || undefined,
+        preparedBy: preparedBy || undefined,
+        checkedBy: checkedBy || undefined,
+        approvedBy: approvedBy || undefined,
+        totalTk,
+      };
+
       if (billId) {
         await updateBillMutation.mutateAsync({
           id: billId,
-          data: {
-            ...data,
-            totalTk,
-          },
+          data: billData,
         });
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push(`/bills/${billId}/print`);
+        }
       } else {
-        await createBillMutation.mutateAsync({
-          ...data,
-          totalTk,
-        });
-      }
-      form.reset();
-      if (onSuccess) {
-        onSuccess();
-      } else if (billId) {
-        router.push(`/bills/${billId}`);
-      } else {
-        router.push("/bills");
+        const result = await createBillMutation.mutateAsync(billData);
+        if (onSuccess) {
+          onSuccess();
+        } else if (result?._id) {
+          router.push(`/bills/${result._id}/print`);
+        } else {
+          router.push("/bills");
+        }
       }
     } catch (error) {
-      console.error("Error submitting bill:", error);
+      console.error("Error saving bill:", error);
     }
   };
 
+  const handlePrint = () => {
+    // Create a temporary print view
+    window.print();
+  };
+
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-6xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl">
           {billId ? "Edit Bill" : "Create New Bill"}
@@ -134,202 +206,227 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="workerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Worker Name</FormLabel>
-                    <div className="flex gap-2">
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        disabled={workersLoading}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="flex-1 min-h-[44px]">
-                            <SelectValue placeholder="Select or type worker name" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {workers.map((worker) => (
-                            <SelectItem key={worker._id} value={worker.name}>
-                              {worker.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        placeholder="Or type worker name directly"
-                        value={newWorkerName || field.value}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setNewWorkerName(value);
-                          field.onChange(value);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            if (newWorkerName.trim() && newWorkerName.trim() !== field.value) {
-                              handleAddWorker();
-                            }
-                          }
-                        }}
-                        className="flex-1 min-h-[44px]"
-                      />
-                      <Button
-                        type="button"
-                        onClick={async () => {
-                          if (newWorkerName.trim()) {
-                            await handleAddWorker();
-                            field.onChange(newWorkerName.trim());
-                            setNewWorkerName("");
-                          }
-                        }}
-                        disabled={!newWorkerName.trim()}
-                        variant="outline"
-                        className="min-h-[44px]"
-                      >
-                        Add
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <form className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Worker Entries</h3>
+              </div>
 
-              <FormField
-                control={form.control}
-                name="workingHours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Working Hours</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        {...field}
-                        className="text-lg min-h-[44px]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4">
+                {fields.map((field, index) => {
+                  const entryTotal =
+                    (watchedEntries[index]?.workingHours || 0) *
+                      (watchedEntries[index]?.wagePerHour || 0) +
+                    (watchedEntries[index]?.overtimeHours || 0) *
+                      (watchedEntries[index]?.overtimeWagePerHour || 0);
 
-              <FormField
-                control={form.control}
-                name="wagePerHour"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Wage Per Hour (Tk)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        {...field}
-                        className="text-lg"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  return (
+                    <Card key={field.id} className="p-4">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-medium">Worker {index + 1}</h4>
+                        {fields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => remove(index)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
 
-              <FormField
-                control={form.control}
-                name="overtimeHours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Overtime (Hours)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.5"
-                        {...field}
-                        className="text-lg min-h-[44px]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`entries.${index}.workerName`}
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Worker Name</FormLabel>
+                              <FormControl>
+                                <WorkerCombobox
+                                  value={field.value}
+                                  onValueChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-              <FormField
-                control={form.control}
-                name="overtimeWagePerHour"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Overtime Wage Per Hour (Tk)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        {...field}
-                        className="text-lg"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        <FormField
+                          control={form.control}
+                          name={`entries.${index}.workingHours`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Working Hours</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.5"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      e.target.value === ""
+                                        ? undefined
+                                        : e.target.value
+                                    )
+                                  }
+                                  className="text-lg min-h-[44px]"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-              <FormField
-                control={form.control}
-                name="paymentStatus"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Payment Status</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="text-lg min-h-[44px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="cash">Cash</SelectItem>
-                        <SelectItem value="bank">Bank</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        <FormField
+                          control={form.control}
+                          name={`entries.${index}.wagePerHour`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Wage Per Hour (Tk)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      e.target.value === ""
+                                        ? undefined
+                                        : e.target.value
+                                    )
+                                  }
+                                  className="text-lg min-h-[44px]"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`entries.${index}.overtimeHours`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Overtime (Hours)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.5"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      e.target.value === ""
+                                        ? undefined
+                                        : e.target.value
+                                    )
+                                  }
+                                  className="text-lg min-h-[44px]"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`entries.${index}.overtimeWagePerHour`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Overtime Wage Per Hour (Tk)</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  {...field}
+                                  value={field.value ?? ""}
+                                  onChange={(e) =>
+                                    field.onChange(
+                                      e.target.value === ""
+                                        ? undefined
+                                        : e.target.value
+                                    )
+                                  }
+                                  className="text-lg min-h-[44px]"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`entries.${index}.paymentStatus`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Payment Status</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="text-lg min-h-[44px]">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="cash">Cash</SelectItem>
+                                  <SelectItem value="bank">Bank</SelectItem>
+                                  <SelectItem value="pending">
+                                    Pending
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="md:col-span-2 bg-muted p-3 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">Entry Total:</span>
+                            <span className="text-lg font-bold">
+                              {entryTotal.toLocaleString("en-BD")} Tk
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Add Worker button below each entry */}
+                      <div className="mt-4 pt-4 border-t">
+                        <Button
+                          type="button"
+                          onClick={addWorkerEntry}
+                          variant="default"
+                          className="w-full min-h-[44px]"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Worker
+                        </Button>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="bg-muted p-4 rounded-lg">
+            <div className="bg-primary/10 p-4 rounded-lg border-2 border-primary">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold">Total (Tk):</span>
+                <span className="text-lg font-semibold">Grand Total (Tk):</span>
                 <span className="text-2xl font-bold">
                   {totalTk.toLocaleString("en-BD")}
                 </span>
               </div>
             </div>
-
-            <FormField
-              control={form.control}
-              name="signature"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Signature</FormLabel>
-                  <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Signature or notes"
-                        rows={3}
-                        className="text-lg min-h-[100px]"
-                      />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <div className="flex justify-end gap-4 pt-4">
               <Button
@@ -340,22 +437,56 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={
-                  createBillMutation.isPending || updateBillMutation.isPending
-                }
-                className="min-w-[140px] min-h-[44px]"
-              >
-                {createBillMutation.isPending || updateBillMutation.isPending
-                  ? "Saving..."
-                  : billId
-                    ? "Update Bill"
-                    : "Create Bill"}
-              </Button>
             </div>
           </form>
         </Form>
+
+        {/* Live Preview */}
+        {(() => {
+          const validEntries = previewEntries.filter(
+            (e) => e.workerName && e.workerName.trim()
+          );
+          return validEntries.length > 0 ? (
+            <div className="mt-8">
+              <BillPreview
+                entries={validEntries}
+                totalTk={totalTk}
+                notes={notes}
+                preparedBy={preparedBy}
+                checkedBy={checkedBy}
+                approvedBy={approvedBy}
+                onNotesChange={setNotes}
+                onPreparedByChange={setPreparedBy}
+                onCheckedByChange={setCheckedBy}
+                onApprovedByChange={setApprovedBy}
+                onSignatureChange={(index, signature) => {
+                  const newSigs = [...signatures];
+                  // Find the entry in validEntries at this index
+                  const entry = validEntries[index];
+                  if (entry) {
+                    // Find the original index in watchedEntries
+                    const originalIndex = watchedEntries.findIndex(
+                      (e) => e.workerName === entry.workerName
+                    );
+                    if (originalIndex >= 0) {
+                      newSigs[originalIndex] = signature;
+                      setSignatures(newSigs);
+                    } else {
+                      // Fallback: use the index directly if we can't find it
+                      newSigs[index] = signature;
+                      setSignatures(newSigs);
+                    }
+                  }
+                }}
+                onPrint={handlePrint}
+                onSave={handleSave}
+                isSaving={
+                  createBillMutation.isPending || updateBillMutation.isPending
+                }
+              />
+            </div>
+          ) : null;
+        })()}
       </CardContent>
     </Card>
   );

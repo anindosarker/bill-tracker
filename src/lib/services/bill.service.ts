@@ -1,4 +1,5 @@
 import { IBill } from "@/backend/models/bill.model";
+import { IBillEntry } from "@/backend/models/bill.model";
 import {
   createBill as createBillAction,
   getAllBills as getAllBillsAction,
@@ -8,14 +9,13 @@ import {
 
 class BillService {
   async createBill(data: {
-    workerName: string;
-    workingHours: number;
-    wagePerHour: number;
-    overtimeHours: number;
-    overtimeWagePerHour: number;
-    paymentStatus: string;
+    entries: IBillEntry[];
+    duration?: string;
+    notes?: string;
+    preparedBy?: string;
+    checkedBy?: string;
+    approvedBy?: string;
     totalTk: number;
-    signature?: string;
   }) {
     const result = await createBillAction(data);
     if (!result.success) {
@@ -43,14 +43,13 @@ class BillService {
   async updateBill(
     id: string,
     data: {
-      workerName: string;
-      workingHours: number;
-      wagePerHour: number;
-      overtimeHours: number;
-      overtimeWagePerHour: number;
-      paymentStatus: string;
+      entries: IBillEntry[];
+      duration?: string;
+      notes?: string;
+      preparedBy?: string;
+      checkedBy?: string;
+      approvedBy?: string;
       totalTk: number;
-      signature?: string;
     }
   ) {
     const result = await updateBillAction(id, data);
