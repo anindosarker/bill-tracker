@@ -31,22 +31,26 @@ import * as z from "zod";
 
 const billEntrySchema = z.object({
   workerName: z.string().min(1, "Worker name is required"),
-  workingHours: z.preprocess((val) => {
-    if (val === "" || val === undefined || val === null) return undefined;
-    return Number(val);
-  }, z.number().min(0, "Working hours must be positive").optional()),
-  wagePerHour: z.preprocess((val) => {
-    if (val === "" || val === undefined || val === null) return undefined;
-    return Number(val);
-  }, z.number().min(0, "Wage per hour must be positive").optional()),
-  overtimeHours: z.preprocess((val) => {
-    if (val === "" || val === undefined || val === null) return 0;
-    return Number(val);
-  }, z.number().min(0).default(0)),
-  overtimeWagePerHour: z.preprocess((val) => {
-    if (val === "" || val === undefined || val === null) return 0;
-    return Number(val);
-  }, z.number().min(0).default(0)),
+  workingHours: z.union([
+    z.string().transform((val) => (val === "" ? undefined : Number(val))),
+    z.number(),
+    z.undefined(),
+  ]).pipe(z.number().min(0, "Working hours must be positive").optional()),
+  wagePerHour: z.union([
+    z.string().transform((val) => (val === "" ? undefined : Number(val))),
+    z.number(),
+    z.undefined(),
+  ]).pipe(z.number().min(0, "Wage per hour must be positive").optional()),
+  overtimeHours: z.union([
+    z.string().transform((val) => (val === "" ? 0 : Number(val))),
+    z.number(),
+    z.undefined(),
+  ]).pipe(z.number().min(0).default(0)),
+  overtimeWagePerHour: z.union([
+    z.string().transform((val) => (val === "" ? 0 : Number(val))),
+    z.number(),
+    z.undefined(),
+  ]).pipe(z.number().min(0).default(0)),
   paymentStatus: z.string().default("cash"),
 });
 
@@ -86,6 +90,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   );
 
   const form = useForm<BillFormValues>({
+    // @ts-expect-error - Zod union/pipe types don't perfectly match React Hook Form's expected types
     resolver: zodResolver(billFormSchema),
     defaultValues: initialData || {
       entries: [
@@ -143,19 +148,24 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
       workerName: "",
       workingHours: undefined,
       wagePerHour: undefined,
-      overtimeHours: undefined,
-      overtimeWagePerHour: undefined,
+      overtimeHours: 0,
+      overtimeWagePerHour: 0,
       paymentStatus: "cash",
-    });
+    } as Parameters<typeof append>[0]);
   };
 
   const handleSave = async () => {
     try {
       const entries: IBillEntry[] = watchedEntries.map((entry, index) => {
-        const regularPay = entry.workingHours * entry.wagePerHour;
-        const overtimePay = entry.overtimeHours * entry.overtimeWagePerHour;
+        const regularPay = (entry.workingHours || 0) * (entry.wagePerHour || 0);
+        const overtimePay = (entry.overtimeHours || 0) * (entry.overtimeWagePerHour || 0);
         return {
-          ...entry,
+          workerName: entry.workerName,
+          workingHours: entry.workingHours || 0,
+          wagePerHour: entry.wagePerHour || 0,
+          overtimeHours: entry.overtimeHours || 0,
+          overtimeWagePerHour: entry.overtimeWagePerHour || 0,
+          paymentStatus: entry.paymentStatus || "cash",
           totalTk: regularPay + overtimePay,
           signature: signatures[index] || undefined,
         };
@@ -231,6 +241,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
+                          // @ts-expect-error - Type mismatch due to Zod union/pipe schema
                           control={form.control}
                           name={`entries.${index}.workerName`}
                           render={({ field }) => (
@@ -248,6 +259,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                         />
 
                         <FormField
+                          // @ts-expect-error - Type mismatch due to Zod union/pipe schema
                           control={form.control}
                           name={`entries.${index}.workingHours`}
                           render={({ field }) => (
@@ -275,6 +287,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                         />
 
                         <FormField
+                          // @ts-expect-error - Type mismatch due to Zod union/pipe schema
                           control={form.control}
                           name={`entries.${index}.wagePerHour`}
                           render={({ field }) => (
@@ -302,6 +315,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                         />
 
                         <FormField
+                          // @ts-expect-error - Type mismatch due to Zod union/pipe schema
                           control={form.control}
                           name={`entries.${index}.overtimeHours`}
                           render={({ field }) => (
@@ -329,6 +343,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                         />
 
                         <FormField
+                          // @ts-expect-error - Type mismatch due to Zod union/pipe schema
                           control={form.control}
                           name={`entries.${index}.overtimeWagePerHour`}
                           render={({ field }) => (
@@ -356,6 +371,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                         />
 
                         <FormField
+                          // @ts-expect-error - Type mismatch due to Zod union/pipe schema
                           control={form.control}
                           name={`entries.${index}.paymentStatus`}
                           render={({ field }) => (
@@ -499,7 +515,13 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
           return validEntries.length > 0 ? (
             <div className="mt-8">
               <BillPreview
-                entries={validEntries}
+                entries={validEntries.map(entry => ({
+                  ...entry,
+                  workingHours: entry.workingHours || 0,
+                  wagePerHour: entry.wagePerHour || 0,
+                  overtimeHours: entry.overtimeHours || 0,
+                  overtimeWagePerHour: entry.overtimeWagePerHour || 0,
+                }))}
                 totalTk={totalTk}
                 notes={notes}
                 preparedBy={preparedBy}
