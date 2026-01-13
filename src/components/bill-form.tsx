@@ -85,7 +85,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   const [preparedBy, setPreparedBy] = useState(initialData?.preparedBy || "");
   const [checkedBy, setCheckedBy] = useState(initialData?.checkedBy || "");
   const [approvedBy, setApprovedBy] = useState(initialData?.approvedBy || "");
-  const [signatoryName, setSignatoryName] = useState("Prodip Kumar Sarker");
+  const [signatoryName, setSignatoryName] = useState("(Prodip Kumar Sarker)");
 
   // Parse duration from string format "DD.MM.YYYY to DD.MM.YYYY" or initialize with empty dates
   const parseDuration = (durationStr?: string) => {
