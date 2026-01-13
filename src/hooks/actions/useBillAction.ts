@@ -37,6 +37,7 @@ export function useBillAction() {
         preparedBy?: string;
         checkedBy?: string;
         approvedBy?: string;
+        signatoryName?: string;
         totalTk: number;
       };
     }) => billServiceFrontend.updateBill(id, data),

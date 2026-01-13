@@ -18,6 +18,7 @@ export interface IBillVersion {
   preparedBy?: string;
   checkedBy?: string;
   approvedBy?: string;
+  signatoryName?: string;
   totalTk: number;
   updatedAt: Date;
 }
@@ -29,6 +30,7 @@ export interface IBill extends Document {
   preparedBy?: string;
   checkedBy?: string;
   approvedBy?: string;
+  signatoryName?: string;
   totalTk: number;
   versions: IBillVersion[];
   createdAt: Date;
@@ -57,6 +59,7 @@ const BillVersionSchema = new Schema<IBillVersion>(
     preparedBy: { type: String },
     checkedBy: { type: String },
     approvedBy: { type: String },
+    signatoryName: { type: String },
     totalTk: { type: Number, required: true },
     updatedAt: { type: Date, default: Date.now },
   },
@@ -71,6 +74,7 @@ const BillSchema = new Schema<IBill>(
     preparedBy: { type: String },
     checkedBy: { type: String },
     approvedBy: { type: String },
+    signatoryName: { type: String, default: "Prodip Kumar Sarker" },
     totalTk: { type: Number, required: true },
     versions: { type: [BillVersionSchema], default: [] },
   },

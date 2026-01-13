@@ -72,6 +72,7 @@ interface BillFormProps {
     preparedBy?: string;
     checkedBy?: string;
     approvedBy?: string;
+    signatoryName?: string;
     duration?: string;
   };
   billId?: string;
@@ -86,7 +87,9 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   const [preparedBy, setPreparedBy] = useState(initialData?.preparedBy || "");
   const [checkedBy, setCheckedBy] = useState(initialData?.checkedBy || "");
   const [approvedBy, setApprovedBy] = useState(initialData?.approvedBy || "");
-  const [signatoryName, setSignatoryName] = useState("(Prodip Kumar Sarker)");
+  const [signatoryName, setSignatoryName] = useState(
+    initialData?.signatoryName || "Prodip Kumar Sarker"
+  );
 
   // Parse duration from string format "DD.MM.YYYY to DD.MM.YYYY" or initialize with empty dates
   const parseDuration = (durationStr?: string) => {
@@ -207,21 +210,24 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
         return;
       }
 
-      const entries: IBillEntry[] = entriesWithIndices.map(({ entry, index }) => {
-        const regularPay = (entry.workingHours || 0) * (entry.wagePerHour || 0);
-        const overtimePay =
-          (entry.overtimeHours || 0) * (entry.overtimeWagePerHour || 0);
-        return {
-          workerName: entry.workerName.trim(),
-          workingHours: entry.workingHours || 0,
-          wagePerHour: entry.wagePerHour || 0,
-          overtimeHours: entry.overtimeHours || 0,
-          overtimeWagePerHour: entry.overtimeWagePerHour || 0,
-          paymentStatus: paymentStatuses[index] || "cash",
-          totalTk: regularPay + overtimePay,
-          signature: signatures[index] || undefined,
-        };
-      });
+      const entries: IBillEntry[] = entriesWithIndices.map(
+        ({ entry, index }) => {
+          const regularPay =
+            (entry.workingHours || 0) * (entry.wagePerHour || 0);
+          const overtimePay =
+            (entry.overtimeHours || 0) * (entry.overtimeWagePerHour || 0);
+          return {
+            workerName: entry.workerName.trim(),
+            workingHours: entry.workingHours || 0,
+            wagePerHour: entry.wagePerHour || 0,
+            overtimeHours: entry.overtimeHours || 0,
+            overtimeWagePerHour: entry.overtimeWagePerHour || 0,
+            paymentStatus: paymentStatuses[index] || "cash",
+            totalTk: regularPay + overtimePay,
+            signature: signatures[index] || undefined,
+          };
+        },
+      );
 
       // Format duration as "DD.MM.YYYY to DD.MM.YYYY"
       const formatDuration = (from: string, to: string) => {
@@ -234,7 +240,10 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
       };
 
       // Recalculate totalTk from the filtered entries
-      const calculatedTotalTk = entries.reduce((sum, entry) => sum + entry.totalTk, 0);
+      const calculatedTotalTk = entries.reduce(
+        (sum, entry) => sum + entry.totalTk,
+        0,
+      );
 
       const billData = {
         entries,
@@ -242,6 +251,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
         preparedBy: preparedBy || undefined,
         checkedBy: checkedBy || undefined,
         approvedBy: approvedBy || undefined,
+        signatoryName: signatoryName || "Prodip Kumar Sarker",
         duration: formatDuration(durationFrom, durationTo),
         totalTk: calculatedTotalTk,
       };

@@ -37,15 +37,15 @@ export function PrintBill({ bill }: PrintBillProps) {
         <table className="w-full border-collapse border border-black mb-6" style={{ fontFamily: "Times New Roman" }}>
           <thead>
             <tr>
-              <th className="border border-black p-2 text-center font-bold text-sm">Sl.No.</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Worker Name</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Working Hour</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Wages per Hour (Tk)</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Over time (Hour)</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Over time per Hour (Tk)</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Payment status</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Total tk.</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Signature</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Sl.No.</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Worker Name</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Working Hour</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Wages per Hour (Tk)</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Over time (Hour)</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Over time per Hour (Tk)</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Payment status</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Total tk.</th>
+              <th className="border-t border-l border-r border-b border-black p-2 text-center font-bold text-sm">Signature</th>
             </tr>
           </thead>
           <tbody>
@@ -95,30 +95,54 @@ export function PrintBill({ bill }: PrintBillProps) {
         {/* Footer */}
         <div className="mt-8 space-y-4">
           <div className="flex justify-between text-sm">
-            <div>
-              <p style={{ fontFamily: "Times New Roman" }}>Prepared by</p>
-              {bill.preparedBy && (
-                <p style={{ fontFamily: "Arial" }}>({bill.preparedBy})</p>
-              )}
+            {/* Left: Prepared by */}
+            <div className="flex flex-col">
+              <p className="mb-1 text-sm" style={{ fontFamily: "Arial" }}>
+                {bill.preparedBy ? `(${bill.preparedBy})` : ""}
+              </p>
+              <div className="mb-1 w-32 border-t border-black"></div>
+              <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
+                Prepared by
+              </p>
             </div>
-            <div className="text-right">
-              <p style={{ fontFamily: "Arial" }}>For, Independent Agriscience Factory</p>
-              <p className="mt-4" style={{ fontFamily: "Times New Roman" }}>Bogura</p>
+
+            {/* Right: Company info */}
+            <div className="flex flex-col items-end">
+              <p
+                className="mb-1 min-w-[180px] text-right text-sm whitespace-nowrap"
+                style={{ fontFamily: "Arial" }}
+              >
+                ({bill.signatoryName || "Prodip Kumar Sarker"})
+              </p>
+              <div className="mb-1 min-w-[180px] border-t border-black"></div>
+              <p className="mt-1 text-sm" style={{ fontFamily: "Arial" }}>
+                For, Independent Agriscience Factory
+              </p>
+              <p className="mt-1 text-sm" style={{ fontFamily: "Times New Roman" }}>
+                Bogura
+              </p>
             </div>
           </div>
 
+          {/* Checked by and Approved by */}
           <div className="flex justify-center gap-8 mt-6 text-sm">
-            <div>
-              <p style={{ fontFamily: "Arial" }}>Checked by:</p>
-              {bill.checkedBy && (
-                <p style={{ fontFamily: "Arial" }}>{bill.checkedBy}</p>
-              )}
+            <div className="flex flex-col">
+              <p className="mb-1 text-sm" style={{ fontFamily: "Arial" }}>
+                {bill.checkedBy || ""}
+              </p>
+              <div className="mb-1 w-32 border-t border-black"></div>
+              <p className="text-sm" style={{ fontFamily: "Arial" }}>
+                Checked by:
+              </p>
             </div>
-            <div>
-              <p style={{ fontFamily: "Arial" }}>Approved by:</p>
-              {bill.approvedBy && (
-                <p style={{ fontFamily: "Arial" }}>{bill.approvedBy}</p>
-              )}
+            <div className="flex flex-col">
+              <p className="mb-1 text-sm" style={{ fontFamily: "Arial" }}>
+                {bill.approvedBy || ""}
+              </p>
+              <div className="mb-1 w-32 border-t border-black"></div>
+              <p className="text-sm" style={{ fontFamily: "Arial" }}>
+                Approved by:
+              </p>
             </div>
           </div>
         </div>

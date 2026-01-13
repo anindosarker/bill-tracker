@@ -37,7 +37,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { entries, duration, notes, preparedBy, checkedBy, approvedBy, totalTk } = body;
+    const { entries, duration, notes, preparedBy, checkedBy, approvedBy, signatoryName, totalTk } = body;
 
     // Validate required fields
     if (!entries || !Array.isArray(entries) || entries.length === 0) {
@@ -61,6 +61,7 @@ export async function PUT(
       preparedBy,
       checkedBy,
       approvedBy,
+      signatoryName,
       totalTk,
     });
 

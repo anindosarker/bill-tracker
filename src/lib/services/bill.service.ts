@@ -9,6 +9,7 @@ class BillService {
     preparedBy?: string;
     checkedBy?: string;
     approvedBy?: string;
+    signatoryName?: string;
     totalTk: number;
   }) {
     const response = await fetch("/api/bills", {
@@ -71,6 +72,7 @@ class BillService {
       preparedBy?: string;
       checkedBy?: string;
       approvedBy?: string;
+      signatoryName?: string;
       totalTk: number;
     }
   ) {

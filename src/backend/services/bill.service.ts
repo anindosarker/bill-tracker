@@ -9,6 +9,7 @@ export class BillService {
     preparedBy?: string;
     checkedBy?: string;
     approvedBy?: string;
+    signatoryName?: string;
     totalTk: number;
   }) {
     await dbConnect();
@@ -35,6 +36,7 @@ export class BillService {
       preparedBy?: string;
       checkedBy?: string;
       approvedBy?: string;
+      signatoryName?: string;
       totalTk: number;
     }
   ) {
@@ -53,6 +55,7 @@ export class BillService {
       preparedBy: bill.preparedBy,
       checkedBy: bill.checkedBy,
       approvedBy: bill.approvedBy,
+      signatoryName: bill.signatoryName,
       totalTk: bill.totalTk,
       updatedAt: bill.updatedAt,
     };

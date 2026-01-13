@@ -38,6 +38,7 @@ export function EditBillClient({ bill, billId }: EditBillClientProps) {
                 preparedBy: bill.preparedBy || "",
                 checkedBy: bill.checkedBy || "",
                 approvedBy: bill.approvedBy || "",
+                signatoryName: bill.signatoryName || "Prodip Kumar Sarker",
                 duration: bill.duration || "",
               }}
               onSuccess={() => {

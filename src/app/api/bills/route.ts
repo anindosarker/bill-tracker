@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
       preparedBy,
       checkedBy,
       approvedBy,
+      signatoryName,
       totalTk,
     } = body;
 
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
       preparedBy,
       checkedBy,
       approvedBy,
+      signatoryName,
       totalTk,
     });
 
