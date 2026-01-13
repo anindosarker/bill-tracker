@@ -177,7 +177,7 @@ export function BillTable({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="bg-muted hover:bg-muted/80 h-6 w-6 rounded-full"
+                      className="bg-muted hover:bg-muted/80 h-6 w-6 rounded-full print:hidden"
                       onClick={() => {
                         const newEditing = new Set(editingPaymentStatuses);
                         newEditing.add(index);
@@ -236,7 +236,7 @@ export function BillTable({
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="bg-muted hover:bg-muted/80 h-6 w-6 rounded-full"
+                      className="bg-muted hover:bg-muted/80 h-6 w-6 rounded-full print:hidden"
                       onClick={() => {
                         const newEditing = new Set(editingSignatures);
                         newEditing.add(index);

@@ -70,10 +70,10 @@ export function BillPreview({
 
   return (
     <div
-      className="border-primary/20 rounded-lg border-2 bg-white p-6"
+      className="border-primary/20 rounded-lg border-2 bg-white p-6 print:border-0 print:p-0"
       data-bill-preview
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between print:hidden">
         <h3 className="text-xl font-bold">Bill Preview</h3>
         <div className="flex gap-2">
           {onSave && (

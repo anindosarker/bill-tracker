@@ -121,7 +121,7 @@ export function InlineEditableField({
         type="button"
         variant="ghost"
         size="icon"
-        className="hover:bg-muted/50 h-5 w-5 shrink-0 opacity-50 hover:opacity-100"
+        className="hover:bg-muted/50 h-5 w-5 shrink-0 opacity-50 hover:opacity-100 print:hidden"
         onClick={() => setIsEditing(true)}
       >
         <Edit2 className="h-3 w-3" />

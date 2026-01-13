@@ -258,15 +258,15 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   };
 
   return (
-    <Card className="mx-auto w-full max-w-6xl">
-      <CardHeader>
+    <Card className="mx-auto w-full max-w-6xl print:border-0 print:shadow-none">
+      <CardHeader className="print:hidden">
         <CardTitle className="text-2xl">
           {billId ? "Edit Bill" : "Create New Bill"}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="print:p-0">
         <Form {...form}>
-          <form className="space-y-6">
+          <form className="space-y-6 print:hidden">
             <div className="flex flex-col gap-2 md:flex-row">
               <div className="space-y-2">
                 <label className="text-sm font-medium">
