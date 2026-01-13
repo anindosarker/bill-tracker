@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { IWorker } from "@/backend/models/worker.model";
+import type { IWorker } from "@/types/worker.types";
 import { useWorkerAction } from "@/hooks/actions/useWorkerAction";
 
 interface WorkerComboboxProps {

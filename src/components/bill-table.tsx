@@ -1,6 +1,6 @@
 "use client";
 
-import { IBillEntry } from "@/backend/models/bill.model";
+import type { IBillEntry } from "@/types/bill.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check, Edit2, X } from "lucide-react";

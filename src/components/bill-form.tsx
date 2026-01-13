@@ -1,6 +1,6 @@
 "use client";
 
-import { IBillEntry } from "@/backend/models/bill.model";
+import type { IBillEntry } from "@/types/bill.types";
 import { BillPreview } from "@/components/bill-preview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

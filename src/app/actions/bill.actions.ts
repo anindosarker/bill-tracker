@@ -2,17 +2,9 @@
 
 import { billService } from "@/backend/services/bill.service";
 import { revalidatePath } from "next/cache";
-import { IBillEntry } from "@/backend/models/bill.model";
+import type { CreateBillDTO, UpdateBillDTO, IBillEntry } from "@/types/bill.types";
 
-export async function createBill(data: {
-  entries: IBillEntry[];
-  duration?: string;
-  notes?: string;
-  preparedBy?: string;
-  checkedBy?: string;
-  approvedBy?: string;
-  totalTk: number;
-}) {
+export async function createBill(data: CreateBillDTO) {
   try {
     const bill = await billService.createBill(data);
     revalidatePath("/");
@@ -50,18 +42,7 @@ export async function getBill(id: string) {
   }
 }
 
-export async function updateBill(
-  id: string,
-  data: {
-    entries: IBillEntry[];
-    duration?: string;
-    notes?: string;
-    preparedBy?: string;
-    checkedBy?: string;
-    approvedBy?: string;
-    totalTk: number;
-  }
-) {
+export async function updateBill(id: string, data: UpdateBillDTO) {
   try {
     const bill = await billService.updateBill(id, data);
     revalidatePath("/");

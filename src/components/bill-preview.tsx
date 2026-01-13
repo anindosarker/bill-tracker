@@ -1,6 +1,6 @@
 "use client";
 
-import { IBillEntry } from "@/backend/models/bill.model";
+import type { IBillEntry } from "@/types/bill.types";
 import { BillFooter } from "@/components/bill-footer";
 import { BillHeader } from "@/components/bill-header";
 import { BillNotes } from "@/components/bill-notes";

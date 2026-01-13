@@ -1,17 +1,7 @@
-import { IBill } from "@/backend/models/bill.model";
-import { IBillEntry } from "@/backend/models/bill.model";
+import type { IBill, IBillEntry, CreateBillDTO, UpdateBillDTO } from "@/types/bill.types";
 
 class BillService {
-  async createBill(data: {
-    entries: IBillEntry[];
-    duration?: string;
-    notes?: string;
-    preparedBy?: string;
-    checkedBy?: string;
-    approvedBy?: string;
-    signatoryName?: string;
-    totalTk: number;
-  }) {
+  async createBill(data: CreateBillDTO) {
     const response = await fetch("/api/bills", {
       method: "POST",
       headers: {
@@ -63,19 +53,7 @@ class BillService {
     return result.data as IBill;
   }
 
-  async updateBill(
-    id: string,
-    data: {
-      entries: IBillEntry[];
-      duration?: string;
-      notes?: string;
-      preparedBy?: string;
-      checkedBy?: string;
-      approvedBy?: string;
-      signatoryName?: string;
-      totalTk: number;
-    }
-  ) {
+  async updateBill(id: string, data: UpdateBillDTO) {
     const response = await fetch(`/api/bills/${id}`, {
       method: "PUT",
       headers: {

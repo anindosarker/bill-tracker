@@ -1,5 +1,6 @@
 import dbConnect from "../lib/db";
-import Worker, { IWorker } from "../models/worker.model";
+import Worker from "../models/worker.model";
+import type { IWorker } from "@/types/worker.types";
 
 export class WorkerService {
   async createWorker(name: string) {

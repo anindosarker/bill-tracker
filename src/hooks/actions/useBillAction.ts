@@ -1,6 +1,6 @@
 "use client";
 
-import { IBillEntry } from "@/backend/models/bill.model";
+import type { IBillEntry, UpdateBillDTO } from "@/types/bill.types";
 import { billServiceFrontend } from "@/lib/services/bill.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -30,16 +30,7 @@ export function useBillAction() {
       data,
     }: {
       id: string;
-      data: {
-        entries: IBillEntry[];
-        duration?: string;
-        notes?: string;
-        preparedBy?: string;
-        checkedBy?: string;
-        approvedBy?: string;
-        signatoryName?: string;
-        totalTk: number;
-      };
+      data: UpdateBillDTO;
     }) => billServiceFrontend.updateBill(id, data),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({

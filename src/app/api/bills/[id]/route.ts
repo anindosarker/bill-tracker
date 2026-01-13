@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { billService } from "@/backend/services/bill.service";
-import { IBillEntry } from "@/backend/models/bill.model";
+import type { UpdateBillDTO } from "@/types/bill.types";
 
 export async function GET(
   request: NextRequest,

@@ -1,10 +1,5 @@
-import mongoose, { Document, Schema } from "mongoose";
-
-export interface IWorker extends Document {
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose, { Schema } from "mongoose";
+import { IWorker } from "@/types/worker.types";
 
 const WorkerSchema = new Schema<IWorker>(
   {

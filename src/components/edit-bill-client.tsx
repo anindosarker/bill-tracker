@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { IBill } from "@/backend/models/bill.model";
+import type { IBill } from "@/types/bill.types";
 
 interface EditBillClientProps {
   bill: IBill;

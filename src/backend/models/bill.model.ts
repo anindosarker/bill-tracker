@@ -1,41 +1,5 @@
-import mongoose, { Document, Schema } from "mongoose";
-
-export interface IBillEntry {
-  workerName: string;
-  workingHours: number;
-  wagePerHour: number;
-  overtimeHours: number;
-  overtimeWagePerHour: number;
-  paymentStatus: string;
-  totalTk: number;
-  signature?: string;
-}
-
-export interface IBillVersion {
-  entries: IBillEntry[];
-  duration?: string;
-  notes?: string;
-  preparedBy?: string;
-  checkedBy?: string;
-  approvedBy?: string;
-  signatoryName?: string;
-  totalTk: number;
-  updatedAt: Date;
-}
-
-export interface IBill extends Document {
-  entries: IBillEntry[];
-  duration?: string;
-  notes?: string;
-  preparedBy?: string;
-  checkedBy?: string;
-  approvedBy?: string;
-  signatoryName?: string;
-  totalTk: number;
-  versions: IBillVersion[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose, { Schema } from "mongoose";
+import { IBill, IBillEntry, IBillVersion } from "@/types/bill.types";
 
 const BillEntrySchema = new Schema<IBillEntry>(
   {

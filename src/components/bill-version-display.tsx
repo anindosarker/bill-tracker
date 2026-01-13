@@ -1,6 +1,6 @@
 "use client";
 
-import { IBill } from "@/backend/models/bill.model";
+import type { IBill } from "@/types/bill.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";

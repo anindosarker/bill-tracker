@@ -1,17 +1,9 @@
 import dbConnect from "../lib/db";
-import Bill, { IBill, IBillEntry, IBillVersion } from "../models/bill.model";
+import Bill from "../models/bill.model";
+import type { IBill, IBillEntry, IBillVersion, CreateBillDTO, UpdateBillDTO } from "@/types/bill.types";
 
 export class BillService {
-  async createBill(data: {
-    entries: IBillEntry[];
-    duration?: string;
-    notes?: string;
-    preparedBy?: string;
-    checkedBy?: string;
-    approvedBy?: string;
-    signatoryName?: string;
-    totalTk: number;
-  }) {
+  async createBill(data: CreateBillDTO) {
     await dbConnect();
     const bill = await Bill.create(data);
     return bill;
@@ -27,19 +19,7 @@ export class BillService {
     return Bill.findById(id);
   }
 
-  async updateBill(
-    id: string,
-    data: {
-      entries: IBillEntry[];
-      duration?: string;
-      notes?: string;
-      preparedBy?: string;
-      checkedBy?: string;
-      approvedBy?: string;
-      signatoryName?: string;
-      totalTk: number;
-    }
-  ) {
+  async updateBill(id: string, data: UpdateBillDTO) {
     await dbConnect();
     const bill = await Bill.findById(id);
 

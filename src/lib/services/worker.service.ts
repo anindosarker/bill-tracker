@@ -1,4 +1,4 @@
-import { IWorker } from "@/backend/models/worker.model";
+import type { IWorker } from "@/types/worker.types";
 import {
   createWorker as createWorkerAction,
   getAllWorkers as getAllWorkersAction,

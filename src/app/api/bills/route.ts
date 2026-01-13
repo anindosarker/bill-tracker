@@ -1,5 +1,6 @@
-import { billService } from "@/backend/services/bill.service";
 import { NextRequest, NextResponse } from "next/server";
+import { billService } from "@/backend/services/bill.service";
+import type { CreateBillDTO } from "@/types/bill.types";
 
 export async function POST(request: NextRequest) {
   try {
