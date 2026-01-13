@@ -1,8 +1,9 @@
 "use client";
 
+import { IBillEntry } from "@/backend/models/bill.model";
 import { billServiceFrontend } from "@/lib/services/bill.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IBillEntry } from "@/backend/models/bill.model";
+import { toast } from "sonner";
 
 export const BILL_KEYS = {
   all: ["bills"] as const,
@@ -16,6 +17,10 @@ export function useBillAction() {
     mutationFn: billServiceFrontend.createBill,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: BILL_KEYS.all });
+      toast.success("Bill created successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to create bill");
     },
   });
 
@@ -40,6 +45,10 @@ export function useBillAction() {
         queryKey: BILL_KEYS.detail(variables.id),
       });
       queryClient.invalidateQueries({ queryKey: BILL_KEYS.all });
+      toast.success("Bill updated successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update bill");
     },
   });
 

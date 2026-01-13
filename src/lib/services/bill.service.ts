@@ -1,11 +1,5 @@
 import { IBill } from "@/backend/models/bill.model";
 import { IBillEntry } from "@/backend/models/bill.model";
-import {
-  createBill as createBillAction,
-  getAllBills as getAllBillsAction,
-  getBill as getBillAction,
-  updateBill as updateBillAction,
-} from "@/app/actions/bill.actions";
 
 class BillService {
   async createBill(data: {
@@ -17,26 +11,54 @@ class BillService {
     approvedBy?: string;
     totalTk: number;
   }) {
-    const result = await createBillAction(data);
+    const response = await fetch("/api/bills", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
     if (!result.success) {
-      throw new Error(result.error);
+      throw new Error(result.error || "Failed to create bill");
     }
+
     return result.data;
   }
 
   async getAllBills() {
-    const result = await getAllBillsAction();
+    const response = await fetch("/api/bills", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const result = await response.json();
+
     if (!result.success) {
-      throw new Error(result.error);
+      throw new Error(result.error || "Failed to fetch bills");
     }
+
     return result.data as IBill[];
   }
 
   async getBill(id: string) {
-    const result = await getBillAction(id);
+    const response = await fetch(`/api/bills/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const result = await response.json();
+
     if (!result.success) {
-      throw new Error(result.error);
+      throw new Error(result.error || "Failed to fetch bill");
     }
+
     return result.data as IBill;
   }
 
@@ -52,10 +74,20 @@ class BillService {
       totalTk: number;
     }
   ) {
-    const result = await updateBillAction(id, data);
+    const response = await fetch(`/api/bills/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
     if (!result.success) {
-      throw new Error(result.error);
+      throw new Error(result.error || "Failed to update bill");
     }
+
     return result.data;
   }
 }

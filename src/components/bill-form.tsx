@@ -20,6 +20,7 @@ import { Check, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 
 const billEntrySchema = z.object({
@@ -191,12 +192,27 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
 
   const handleSave = async () => {
     try {
-      const entries: IBillEntry[] = watchedEntries.map((entry, index) => {
+      // Map entries with their original indices, then filter out invalid ones
+      const entriesWithIndices = watchedEntries
+        .map((entry, index) => ({ entry, index }))
+        .filter(
+          ({ entry }) =>
+            entry.workerName &&
+            typeof entry.workerName === "string" &&
+            entry.workerName.trim().length > 0,
+        );
+
+      if (entriesWithIndices.length === 0) {
+        toast.error("At least one entry with a worker name is required");
+        return;
+      }
+
+      const entries: IBillEntry[] = entriesWithIndices.map(({ entry, index }) => {
         const regularPay = (entry.workingHours || 0) * (entry.wagePerHour || 0);
         const overtimePay =
           (entry.overtimeHours || 0) * (entry.overtimeWagePerHour || 0);
         return {
-          workerName: entry.workerName,
+          workerName: entry.workerName.trim(),
           workingHours: entry.workingHours || 0,
           wagePerHour: entry.wagePerHour || 0,
           overtimeHours: entry.overtimeHours || 0,
@@ -217,6 +233,9 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
         return `${formatDate(from)} to ${formatDate(to)}`;
       };
 
+      // Recalculate totalTk from the filtered entries
+      const calculatedTotalTk = entries.reduce((sum, entry) => sum + entry.totalTk, 0);
+
       const billData = {
         entries,
         notes: notes || undefined,
@@ -224,7 +243,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
         checkedBy: checkedBy || undefined,
         approvedBy: approvedBy || undefined,
         duration: formatDuration(durationFrom, durationTo),
-        totalTk,
+        totalTk: calculatedTotalTk,
       };
 
       if (billId) {
