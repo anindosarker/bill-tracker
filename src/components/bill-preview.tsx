@@ -17,6 +17,8 @@ interface BillPreviewProps {
   checkedBy?: string;
   approvedBy?: string;
   signatoryName?: string;
+  duration?: string;
+  billDate?: string;
   onNotesChange?: (notes: string) => void;
   onPreparedByChange?: (name: string) => void;
   onCheckedByChange?: (name: string) => void;
@@ -37,6 +39,8 @@ export function BillPreview({
   checkedBy = "",
   approvedBy = "",
   signatoryName = "Prodip Kumar Sarker",
+  duration,
+  billDate,
   onNotesChange,
   onPreparedByChange,
   onCheckedByChange,
@@ -97,7 +101,7 @@ export function BillPreview({
       </div>
 
       <div className="space-y-6">
-        <BillHeader />
+        <BillHeader duration={duration} billDate={billDate} />
 
         <BillTable
           entries={entries}

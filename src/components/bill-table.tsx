@@ -4,7 +4,7 @@ import { IBillEntry } from "@/backend/models/bill.model";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check, Edit2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface BillTableProps {
   entries: IBillEntry[];
@@ -25,19 +25,20 @@ export function BillTable({
   const [editingPaymentStatuses, setEditingPaymentStatuses] = useState<
     Set<number>
   >(new Set());
-  const [localSignatures, setLocalSignatures] = useState<string[]>(
+  const [localSignatures, setLocalSignatures] = useState<string[]>(() =>
     entries.map((e) => e.signature || ""),
   );
   const [localPaymentStatuses, setLocalPaymentStatuses] = useState<string[]>(
-    entries.map((e) => e.paymentStatus || "cash"),
+    () => entries.map((e) => e.paymentStatus || "cash"),
   );
+  const [prevEntriesLength, setPrevEntriesLength] = useState(entries.length);
 
-  useEffect(() => {
+  // Adjust state during render when entries change (React-recommended pattern)
+  if (entries.length !== prevEntriesLength) {
+    setPrevEntriesLength(entries.length);
     setLocalSignatures(entries.map((e) => e.signature || ""));
-  }, [entries]);
-  useEffect(() => {
     setLocalPaymentStatuses(entries.map((e) => e.paymentStatus || "cash"));
-  }, [entries]);
+  }
 
   const handleSaveSignature = (index: number) => {
     if (onSignatureChange)

@@ -71,6 +71,7 @@ interface BillFormProps {
     preparedBy?: string;
     checkedBy?: string;
     approvedBy?: string;
+    duration?: string;
   };
   billId?: string;
   onSuccess?: () => void;
@@ -85,6 +86,30 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   const [checkedBy, setCheckedBy] = useState(initialData?.checkedBy || "");
   const [approvedBy, setApprovedBy] = useState(initialData?.approvedBy || "");
   const [signatoryName, setSignatoryName] = useState("Prodip Kumar Sarker");
+
+  // Parse duration from string format "DD.MM.YYYY to DD.MM.YYYY" or initialize with empty dates
+  const parseDuration = (durationStr?: string) => {
+    if (!durationStr) return { fromDate: "", toDate: "" };
+    const match = durationStr.match(
+      /(\d{2}\.\d{2}\.\d{4})\s+to\s+(\d{2}\.\d{2}\.\d{4})/,
+    );
+    if (match) {
+      // Convert DD.MM.YYYY to YYYY-MM-DD for date input
+      const fromDate = match[1].split(".").reverse().join("-");
+      const toDate = match[2].split(".").reverse().join("-");
+      return { fromDate, toDate };
+    }
+    return { fromDate: "", toDate: "" };
+  };
+
+  const initialDuration = parseDuration(initialData?.duration);
+  const [durationFrom, setDurationFrom] = useState(initialDuration.fromDate);
+  const [durationTo, setDurationTo] = useState(initialDuration.toDate);
+  const [billDate, setBillDate] = useState(() => {
+    // Format current date as YYYY-MM-DD for date input
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  });
   const [signatures, setSignatures] = useState<string[]>(
     initialData?.entries?.map((e) => e.signature || "") || [],
   );
@@ -182,12 +207,23 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
         };
       });
 
+      // Format duration as "DD.MM.YYYY to DD.MM.YYYY"
+      const formatDuration = (from: string, to: string) => {
+        if (!from || !to) return undefined;
+        const formatDate = (dateStr: string) => {
+          const [year, month, day] = dateStr.split("-");
+          return `${day}.${month}.${year}`;
+        };
+        return `${formatDate(from)} to ${formatDate(to)}`;
+      };
+
       const billData = {
         entries,
         notes: notes || undefined,
         preparedBy: preparedBy || undefined,
         checkedBy: checkedBy || undefined,
         approvedBy: approvedBy || undefined,
+        duration: formatDuration(durationFrom, durationTo),
         totalTk,
       };
 
@@ -231,6 +267,43 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
       <CardContent>
         <Form {...form}>
           <form className="space-y-6">
+            <div className="flex flex-col gap-2 md:flex-row">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Duration From (Optional)
+                </label>
+                <Input
+                  type="date"
+                  value={durationFrom}
+                  onChange={(e) => setDurationFrom(e.target.value)}
+                  className="min-h-[44px]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Duration To (Optional)
+                </label>
+                <Input
+                  type="date"
+                  value={durationTo}
+                  onChange={(e) => setDurationTo(e.target.value)}
+                  className="min-h-[44px]"
+                  min={durationFrom || undefined}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Bill Date</label>
+              <Input
+                type="date"
+                value={billDate}
+                onChange={(e) => setBillDate(e.target.value)}
+                className="min-h-[44px]"
+              />
+            </div>
+
             <div className="space-y-4">
               <div>
                 <h3 className="mb-4 text-lg font-semibold">Worker Entries</h3>
@@ -541,6 +614,18 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                 checkedBy={checkedBy}
                 approvedBy={approvedBy}
                 signatoryName={signatoryName}
+                duration={
+                  durationFrom && durationTo
+                    ? (() => {
+                        const formatDate = (dateStr: string) => {
+                          const [year, month, day] = dateStr.split("-");
+                          return `${day.padStart(2, "0")}.${month.padStart(2, "0")}.${year}`;
+                        };
+                        return `${formatDate(durationFrom)} to ${formatDate(durationTo)}`;
+                      })()
+                    : undefined
+                }
+                billDate={billDate}
                 onNotesChange={setNotes}
                 onPreparedByChange={setPreparedBy}
                 onCheckedByChange={setCheckedBy}

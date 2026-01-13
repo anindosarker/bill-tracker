@@ -1,10 +1,24 @@
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 
 interface BillHeaderProps {
   date?: Date;
+  billDate?: string; // YYYY-MM-DD format
+  duration?: string; // "DD.MM.YYYY to DD.MM.YYYY" format
 }
 
-export function BillHeader({ date = new Date() }: BillHeaderProps) {
+export function BillHeader({ date, billDate, duration }: BillHeaderProps) {
+  // Parse billDate from YYYY-MM-DD format or use provided date
+  const displayDate = billDate
+    ? (() => {
+        try {
+          const [year, month, day] = billDate.split("-");
+          return parse(`${day}/${month}/${year}`, "d/M/yyyy", new Date());
+        } catch {
+          return date || new Date();
+        }
+      })()
+    : date || new Date();
+
   return (
     <>
       {/* Header */}
@@ -26,10 +40,15 @@ export function BillHeader({ date = new Date() }: BillHeaderProps) {
         </p>
       </div>
 
-      {/* Date */}
-      <div className="mb-2 flex justify-end">
+      {/* Duration and Bill Date */}
+      <div className="mb-2 flex items-center justify-between">
+        {duration && (
+          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
+            Duration {duration}
+          </p>
+        )}
         <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
-          {format(date, "dd/MM/yyyy")}
+          {format(displayDate, "dd/M/yyyy")}
         </p>
       </div>
     </>

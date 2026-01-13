@@ -38,6 +38,7 @@ export function EditBillClient({ bill, billId }: EditBillClientProps) {
                 preparedBy: bill.preparedBy || "",
                 checkedBy: bill.checkedBy || "",
                 approvedBy: bill.approvedBy || "",
+                duration: bill.duration || "",
               }}
               onSuccess={() => {
                 router.push(`/bills/${billId}/print`);

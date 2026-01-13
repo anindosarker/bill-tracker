@@ -1,10 +1,10 @@
 "use client";
 
 import { IBill } from "@/backend/models/bill.model";
+import { BillHeader } from "@/components/bill-header";
 import { Button } from "@/components/ui/button";
 import { numberToWords } from "@/lib/utils";
 import { Printer } from "lucide-react";
-import { format } from "date-fns";
 
 interface PrintBillProps {
   bill: IBill;
@@ -28,24 +28,10 @@ export function PrintBill({ bill }: PrintBillProps) {
 
       <div className="bg-white p-8 print:p-4">
         {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "Times New Roman" }}>
-            INDEPENDENT AGRISCIENCE FACTORY
-          </h1>
-          <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: "Times New Roman" }}>
-            RANIRHAT, SAHJAHANPUR, BOGURA
-          </h2>
-          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
-            (WORKER WAGES Payment Sheet)
-          </p>
-        </div>
-
-        {/* Date */}
-        <div className="flex justify-end mb-4">
-          <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
-            {format(new Date(bill.createdAt), "dd/MM/yyyy")}
-          </p>
-        </div>
+        <BillHeader
+          date={new Date(bill.createdAt)}
+          duration={bill.duration}
+        />
 
         {/* Table */}
         <table className="w-full border-collapse border border-black mb-6" style={{ fontFamily: "Times New Roman" }}>
