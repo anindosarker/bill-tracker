@@ -262,10 +262,10 @@ export function BillPreview({
 
   return (
     <div
-      className="border-2 border-primary/20 rounded-lg p-6 bg-white"
+      className="border-primary/20 rounded-lg border-2 bg-white p-6"
       data-bill-preview
     >
-      <div className="flex justify-between items-center mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h3 className="text-xl font-bold">Bill Preview</h3>
         <div className="flex gap-2">
           {onSave && (
@@ -276,7 +276,7 @@ export function BillPreview({
               disabled={isSaving}
               className="min-h-[44px]"
             >
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="mr-2 h-4 w-4" />
               {isSaving ? "Saving..." : "Save Bill"}
             </Button>
           )}
@@ -286,7 +286,7 @@ export function BillPreview({
             onClick={handlePrint}
             className="min-h-[44px]"
           >
-            <Printer className="h-4 w-4 mr-2" />
+            <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
         </div>
@@ -296,13 +296,13 @@ export function BillPreview({
         {/* Header */}
         <div className="text-center">
           <h1
-            className="text-2xl font-bold mb-2"
+            className="mb-2 text-2xl font-bold"
             style={{ fontFamily: "Times New Roman" }}
           >
             INDEPENDENT AGRISCIENCE FACTORY
           </h1>
           <h2
-            className="text-lg font-semibold mb-1"
+            className="mb-1 text-lg font-semibold"
             style={{ fontFamily: "Times New Roman" }}
           >
             RANIRHAT, SAHJAHANPUR, BOGURA
@@ -313,7 +313,7 @@ export function BillPreview({
         </div>
 
         {/* Date */}
-        <div className="flex justify-end mb-2">
+        <div className="mb-2 flex justify-end">
           <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
             {format(new Date(), "dd/MM/yyyy")}
           </p>
@@ -326,31 +326,31 @@ export function BillPreview({
         >
           <thead>
             <tr>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Sl.No.
               </th>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Worker Name
               </th>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Working Hour
               </th>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Wages per Hour (Tk)
               </th>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Over time (Hour)
               </th>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Over time per Hour (Tk)
               </th>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Payment status
               </th>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Total tk.
               </th>
-              <th className="border border-black p-2 text-center font-bold text-sm">
+              <th className="border border-black p-2 text-center text-sm font-bold">
                 Signature
               </th>
             </tr>
@@ -377,7 +377,7 @@ export function BillPreview({
                   {entry.overtimeWagePerHour}
                 </td>
                 <td className="border border-black p-2">
-                  <div className="flex items-center gap-1 justify-center">
+                  <div className="flex items-center justify-center gap-1">
                     {editingPaymentStatuses.has(index) ? (
                       <>
                         <select
@@ -387,7 +387,7 @@ export function BillPreview({
                             newStatuses[index] = e.target.value;
                             setLocalPaymentStatuses(newStatuses);
                           }}
-                          className="h-8 text-xs border-0 focus-visible:ring-1 flex-1"
+                          className="h-8 flex-1 border-0 text-xs focus-visible:ring-1"
                           autoFocus
                         >
                           <option value="cash">Cash</option>
@@ -415,14 +415,14 @@ export function BillPreview({
                       </>
                     ) : (
                       <>
-                        <span className="min-h-[20px] block">
+                        <span className="block min-h-[20px]">
                           {localPaymentStatuses[index] || "cash"}
                         </span>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 rounded-full bg-muted hover:bg-muted/80"
+                          className="bg-muted hover:bg-muted/80 h-6 w-6 rounded-full"
                           onClick={() => {
                             const newEditing = new Set(editingPaymentStatuses);
                             newEditing.add(index);
@@ -450,7 +450,7 @@ export function BillPreview({
                             setLocalSignatures(newSigs);
                           }}
                           placeholder="Signature"
-                          className="h-8 text-xs border-0 focus-visible:ring-1 flex-1"
+                          className="h-8 flex-1 border-0 text-xs focus-visible:ring-1"
                           autoFocus
                         />
                         <Button
@@ -474,14 +474,14 @@ export function BillPreview({
                       </>
                     ) : (
                       <>
-                        <span className="min-h-[20px] block flex-1">
+                        <span className="block min-h-[20px] flex-1">
                           {localSignatures[index] || ""}
                         </span>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 rounded-full bg-muted hover:bg-muted/80"
+                          className="bg-muted hover:bg-muted/80 h-6 w-6 rounded-full"
                           onClick={() => {
                             const newEditing = new Set(editingSignatures);
                             newEditing.add(index);
@@ -519,7 +519,7 @@ export function BillPreview({
                   value={localNotes}
                   onChange={(e) => setLocalNotes(e.target.value)}
                   placeholder="Add notes (optional)"
-                  className="min-h-[60px] text-sm flex-1"
+                  className="min-h-[60px] flex-1 text-sm"
                   style={{ fontFamily: "Arial" }}
                   autoFocus
                 />
@@ -546,14 +546,14 @@ export function BillPreview({
               </>
             ) : (
               <>
-                <p className="text-sm flex-1" style={{ fontFamily: "Arial" }}>
+                <p className="flex-1 text-sm" style={{ fontFamily: "Arial" }}>
                   {localNotes || ""}
                 </p>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 rounded-full bg-muted hover:bg-muted/80"
+                  className="bg-muted hover:bg-muted/80 h-8 w-8 rounded-full"
                   onClick={() => setEditingNotes(true)}
                 >
                   <Edit2 className="h-4 w-4" />
@@ -564,7 +564,7 @@ export function BillPreview({
         </div>
 
         {/* Border line after notes */}
-        <div className="border-t border-black my-2"></div>
+        <div className="my-2 border-t border-black"></div>
 
         {/* In Words */}
         <div>
@@ -597,13 +597,13 @@ export function BillPreview({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 rounded-full bg-muted hover:bg-muted/80"
+                    className="bg-muted hover:bg-muted/80 h-6 w-6 rounded-full"
                     onClick={() => setEditingPreparedBy(true)}
                   >
                     <Edit2 className="h-3 w-3" />
                   </Button>
                 ) : (
-                  <div className="flex flex-col gap-1 mt-1">
+                  <div className="mt-1 flex flex-col gap-1">
                     <Button
                       type="button"
                       variant="ghost"
@@ -624,14 +624,14 @@ export function BillPreview({
                     </Button>
                   </div>
                 )}
-                <div className="border-t border-black mb-1 w-32"></div>
+                <div className="mb-1 w-32 border-t border-black"></div>
                 <p style={{ fontFamily: "Times New Roman" }}>Prepared by</p>
               </div>
             </div>
 
             <div className="text-right">
               {/* Line above Signature field */}
-              <div className="border-t border-black mb-1 w-40 ml-auto"></div>
+              <div className="mb-1 ml-auto w-40 border-t border-black"></div>
               <p style={{ fontFamily: "Arial" }}>(Prodip Kumar Sarker)</p>
               <p className="mt-1" style={{ fontFamily: "Arial" }}>
                 For, Independent Agriscience Factory
@@ -646,14 +646,14 @@ export function BillPreview({
             <div className="flex items-start gap-2">
               <div>
                 {/* Line above Checked by */}
-                <div className="border-t border-black mb-1 w-32"></div>
+                <div className="mb-1 w-32 border-t border-black"></div>
                 <p style={{ fontFamily: "Arial" }}>Checked by:</p>
                 {editingCheckedBy ? (
                   <Input
                     value={localCheckedBy}
                     onChange={(e) => setLocalCheckedBy(e.target.value)}
                     placeholder="Name"
-                    className="mt-1 h-8 text-xs w-32"
+                    className="mt-1 h-8 w-32 text-xs"
                     style={{ fontFamily: "Arial" }}
                     autoFocus
                   />
@@ -666,13 +666,13 @@ export function BillPreview({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 mt-1 rounded-full bg-muted hover:bg-muted/80"
+                  className="bg-muted hover:bg-muted/80 mt-1 h-6 w-6 rounded-full"
                   onClick={() => setEditingCheckedBy(true)}
                 >
                   <Edit2 className="h-3 w-3" />
                 </Button>
               ) : (
-                <div className="flex flex-col gap-1 mt-1">
+                <div className="mt-1 flex flex-col gap-1">
                   <Button
                     type="button"
                     variant="ghost"
@@ -697,14 +697,14 @@ export function BillPreview({
             <div className="flex items-start gap-2">
               <div>
                 {/* Line above Approved by */}
-                <div className="border-t border-black mb-1 w-32"></div>
+                <div className="mb-1 w-32 border-t border-black"></div>
                 <p style={{ fontFamily: "Arial" }}>Approved by:</p>
                 {editingApprovedBy ? (
                   <Input
                     value={localApprovedBy}
                     onChange={(e) => setLocalApprovedBy(e.target.value)}
                     placeholder="Name"
-                    className="mt-1 h-8 text-xs w-32"
+                    className="mt-1 h-8 w-32 text-xs"
                     style={{ fontFamily: "Arial" }}
                     autoFocus
                   />
@@ -717,13 +717,13 @@ export function BillPreview({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 mt-1 rounded-full bg-muted hover:bg-muted/80"
+                  className="bg-muted hover:bg-muted/80 mt-1 h-6 w-6 rounded-full"
                   onClick={() => setEditingApprovedBy(true)}
                 >
                   <Edit2 className="h-3 w-3" />
                 </Button>
               ) : (
-                <div className="flex flex-col gap-1 mt-1">
+                <div className="mt-1 flex flex-col gap-1">
                   <Button
                     type="button"
                     variant="ghost"
