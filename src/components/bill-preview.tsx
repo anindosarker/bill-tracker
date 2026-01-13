@@ -4,9 +4,9 @@ import { IBillEntry } from "@/backend/models/bill.model";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Printer, Edit2, Save, X, Check } from "lucide-react";
 import { format } from "date-fns";
-import { useState, useEffect } from "react";
+import { Check, Edit2, Printer, Save, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface BillPreviewProps {
   entries: IBillEntry[];
@@ -20,6 +20,7 @@ interface BillPreviewProps {
   onCheckedByChange?: (name: string) => void;
   onApprovedByChange?: (name: string) => void;
   onSignatureChange?: (index: number, signature: string) => void;
+  onPaymentStatusChange?: (index: number, paymentStatus: string) => void;
   onPrint?: () => void;
   onSave?: () => void;
   isSaving?: boolean;
@@ -37,6 +38,7 @@ export function BillPreview({
   onCheckedByChange,
   onApprovedByChange,
   onSignatureChange,
+  onPaymentStatusChange,
   onPrint,
   onSave,
   isSaving = false,
@@ -46,8 +48,13 @@ export function BillPreview({
   const [editingPreparedBy, setEditingPreparedBy] = useState(false);
   const [editingCheckedBy, setEditingCheckedBy] = useState(false);
   const [editingApprovedBy, setEditingApprovedBy] = useState(false);
-  const [editingSignatures, setEditingSignatures] = useState<Set<number>>(new Set());
-  
+  const [editingSignatures, setEditingSignatures] = useState<Set<number>>(
+    new Set()
+  );
+  const [editingPaymentStatuses, setEditingPaymentStatuses] = useState<
+    Set<number>
+  >(new Set());
+
   // Local state for each field
   const [localNotes, setLocalNotes] = useState(notes);
   const [localPreparedBy, setLocalPreparedBy] = useState(preparedBy);
@@ -55,6 +62,9 @@ export function BillPreview({
   const [localApprovedBy, setLocalApprovedBy] = useState(approvedBy);
   const [localSignatures, setLocalSignatures] = useState<string[]>(
     entries.map((e) => e.signature || "")
+  );
+  const [localPaymentStatuses, setLocalPaymentStatuses] = useState<string[]>(
+    entries.map((e) => e.paymentStatus || "cash")
   );
 
   // Update local state when props change
@@ -72,6 +82,9 @@ export function BillPreview({
   }, [approvedBy]);
   useEffect(() => {
     setLocalSignatures(entries.map((e) => e.signature || ""));
+  }, [entries]);
+  useEffect(() => {
+    setLocalPaymentStatuses(entries.map((e) => e.paymentStatus || "cash"));
   }, [entries]);
 
   const handlePrint = () => {
@@ -138,7 +151,8 @@ export function BillPreview({
   };
 
   const handleSaveSignature = (index: number) => {
-    if (onSignatureChange) onSignatureChange(index, localSignatures[index] || "");
+    if (onSignatureChange)
+      onSignatureChange(index, localSignatures[index] || "");
     const newEditing = new Set(editingSignatures);
     newEditing.delete(index);
     setEditingSignatures(newEditing);
@@ -152,6 +166,24 @@ export function BillPreview({
     const newEditing = new Set(editingSignatures);
     newEditing.delete(index);
     setEditingSignatures(newEditing);
+  };
+
+  const handleSavePaymentStatus = (index: number) => {
+    if (onPaymentStatusChange)
+      onPaymentStatusChange(index, localPaymentStatuses[index] || "cash");
+    const newEditing = new Set(editingPaymentStatuses);
+    newEditing.delete(index);
+    setEditingPaymentStatuses(newEditing);
+  };
+
+  const handleCancelPaymentStatus = (index: number) => {
+    const originalStatus = entries[index]?.paymentStatus || "cash";
+    const newStatuses = [...localPaymentStatuses];
+    newStatuses[index] = originalStatus;
+    setLocalPaymentStatuses(newStatuses);
+    const newEditing = new Set(editingPaymentStatuses);
+    newEditing.delete(index);
+    setEditingPaymentStatuses(newEditing);
   };
 
   // Convert number to words
@@ -229,7 +261,10 @@ export function BillPreview({
   const amountInWords = numberToWords(Math.floor(totalTk));
 
   return (
-    <div className="border-2 border-primary/20 rounded-lg p-6 bg-white" data-bill-preview>
+    <div
+      className="border-2 border-primary/20 rounded-lg p-6 bg-white"
+      data-bill-preview
+    >
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-bold">Bill Preview</h3>
         <div className="flex gap-2">
@@ -260,10 +295,16 @@ export function BillPreview({
       <div className="space-y-6">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "Times New Roman" }}>
+          <h1
+            className="text-2xl font-bold mb-2"
+            style={{ fontFamily: "Times New Roman" }}
+          >
             INDEPENDENT AGRISCIENCE FACTORY
           </h1>
-          <h2 className="text-lg font-semibold mb-1" style={{ fontFamily: "Times New Roman" }}>
+          <h2
+            className="text-lg font-semibold mb-1"
+            style={{ fontFamily: "Times New Roman" }}
+          >
             RANIRHAT, SAHJAHANPUR, BOGURA
           </h2>
           <p className="text-sm" style={{ fontFamily: "Times New Roman" }}>
@@ -279,31 +320,124 @@ export function BillPreview({
         </div>
 
         {/* Table */}
-        <table className="w-full border-collapse border border-black" style={{ fontFamily: "Times New Roman" }}>
+        <table
+          className="w-full border-collapse border border-black"
+          style={{ fontFamily: "Times New Roman" }}
+        >
           <thead>
             <tr>
-              <th className="border border-black p-2 text-center font-bold text-sm">Sl.No.</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Worker Name</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Working Hour</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Wages per Hour (Tk)</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Over time (Hour)</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Over time per Hour (Tk)</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Payment status</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Total tk.</th>
-              <th className="border border-black p-2 text-center font-bold text-sm">Signature</th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Sl.No.
+              </th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Worker Name
+              </th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Working Hour
+              </th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Wages per Hour (Tk)
+              </th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Over time (Hour)
+              </th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Over time per Hour (Tk)
+              </th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Payment status
+              </th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Total tk.
+              </th>
+              <th className="border border-black p-2 text-center font-bold text-sm">
+                Signature
+              </th>
             </tr>
           </thead>
           <tbody>
             {entries.map((entry, index) => (
               <tr key={index}>
-                <td className="border border-black p-2 text-center">{index + 1}</td>
-                <td className="border border-black p-2 text-left">{entry.workerName}</td>
-                <td className="border border-black p-2 text-center">{entry.workingHours}</td>
-                <td className="border border-black p-2 text-center">{entry.wagePerHour}</td>
-                <td className="border border-black p-2 text-center">{entry.overtimeHours}</td>
-                <td className="border border-black p-2 text-center">{entry.overtimeWagePerHour}</td>
-                <td className="border border-black p-2 text-center">{entry.paymentStatus}</td>
-                <td className="border border-black p-2 text-center">{entry.totalTk.toLocaleString("en-BD")}</td>
+                <td className="border border-black p-2 text-center">
+                  {index + 1}
+                </td>
+                <td className="border border-black p-2 text-left">
+                  {entry.workerName}
+                </td>
+                <td className="border border-black p-2 text-center">
+                  {entry.workingHours}
+                </td>
+                <td className="border border-black p-2 text-center">
+                  {entry.wagePerHour}
+                </td>
+                <td className="border border-black p-2 text-center">
+                  {entry.overtimeHours}
+                </td>
+                <td className="border border-black p-2 text-center">
+                  {entry.overtimeWagePerHour}
+                </td>
+                <td className="border border-black p-2">
+                  <div className="flex items-center gap-1 justify-center">
+                    {editingPaymentStatuses.has(index) ? (
+                      <>
+                        <select
+                          value={localPaymentStatuses[index] || "cash"}
+                          onChange={(e) => {
+                            const newStatuses = [...localPaymentStatuses];
+                            newStatuses[index] = e.target.value;
+                            setLocalPaymentStatuses(newStatuses);
+                          }}
+                          className="h-8 text-xs border-0 focus-visible:ring-1 flex-1"
+                          autoFocus
+                        >
+                          <option value="cash">Cash</option>
+                          <option value="bank">Bank</option>
+                          <option value="pending">Pending</option>
+                        </select>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleSavePaymentStatus(index)}
+                        >
+                          <Check className="h-3 w-3 text-green-600" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => handleCancelPaymentStatus(index)}
+                        >
+                          <X className="h-3 w-3 text-red-600" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="min-h-[20px] block">
+                          {localPaymentStatuses[index] || "cash"}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          onClick={() => {
+                            const newEditing = new Set(editingPaymentStatuses);
+                            newEditing.add(index);
+                            setEditingPaymentStatuses(newEditing);
+                          }}
+                        >
+                          <Edit2 className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </td>
+                <td className="border border-black p-2 text-center">
+                  {entry.totalTk.toLocaleString("en-BD")}
+                </td>
                 <td className="border border-black p-2">
                   <div className="flex items-center gap-1">
                     {editingSignatures.has(index) ? (
@@ -340,7 +474,9 @@ export function BillPreview({
                       </>
                     ) : (
                       <>
-                        <span className="min-h-[20px] block flex-1">{localSignatures[index] || ""}</span>
+                        <span className="min-h-[20px] block flex-1">
+                          {localSignatures[index] || ""}
+                        </span>
                         <Button
                           type="button"
                           variant="ghost"
@@ -450,7 +586,9 @@ export function BillPreview({
                     autoFocus
                   />
                 ) : (
-                  <p style={{ fontFamily: "Arial" }}>{localPreparedBy ? `(${localPreparedBy})` : ""}</p>
+                  <p style={{ fontFamily: "Arial" }}>
+                    {localPreparedBy ? `(${localPreparedBy})` : ""}
+                  </p>
                 )}
               </div>
               {!editingPreparedBy ? (
@@ -487,8 +625,12 @@ export function BillPreview({
               )}
             </div>
             <div className="text-right">
-              <p style={{ fontFamily: "Arial" }}>For, Independent Agriscience Factory</p>
-              <p className="mt-4" style={{ fontFamily: "Times New Roman" }}>Bogura</p>
+              <p style={{ fontFamily: "Arial" }}>
+                For, Independent Agriscience Factory
+              </p>
+              <p className="mt-4" style={{ fontFamily: "Times New Roman" }}>
+                Bogura
+              </p>
             </div>
           </div>
 

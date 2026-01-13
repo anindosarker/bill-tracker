@@ -13,13 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { WorkerCombobox } from "@/components/worker-combobox";
 import { useBillAction } from "@/hooks/actions/useBillAction";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,27 +24,34 @@ import * as z from "zod";
 
 const billEntrySchema = z.object({
   workerName: z.string().min(1, "Worker name is required"),
-  workingHours: z.union([
-    z.string().transform((val) => (val === "" ? undefined : Number(val))),
-    z.number(),
-    z.undefined(),
-  ]).pipe(z.number().min(0, "Working hours must be positive").optional()),
-  wagePerHour: z.union([
-    z.string().transform((val) => (val === "" ? undefined : Number(val))),
-    z.number(),
-    z.undefined(),
-  ]).pipe(z.number().min(0, "Wage per hour must be positive").optional()),
-  overtimeHours: z.union([
-    z.string().transform((val) => (val === "" ? 0 : Number(val))),
-    z.number(),
-    z.undefined(),
-  ]).pipe(z.number().min(0).default(0)),
-  overtimeWagePerHour: z.union([
-    z.string().transform((val) => (val === "" ? 0 : Number(val))),
-    z.number(),
-    z.undefined(),
-  ]).pipe(z.number().min(0).default(0)),
-  paymentStatus: z.string().default("cash"),
+  workingHours: z
+    .union([
+      z.string().transform((val) => (val === "" ? undefined : Number(val))),
+      z.number(),
+      z.undefined(),
+    ])
+    .pipe(z.number().min(0, "Working hours must be positive").optional()),
+  wagePerHour: z
+    .union([
+      z.string().transform((val) => (val === "" ? undefined : Number(val))),
+      z.number(),
+      z.undefined(),
+    ])
+    .pipe(z.number().min(0, "Wage per hour must be positive").optional()),
+  overtimeHours: z
+    .union([
+      z.string().transform((val) => (val === "" ? 0 : Number(val))),
+      z.number(),
+      z.undefined(),
+    ])
+    .pipe(z.number().min(0).default(0)),
+  overtimeWagePerHour: z
+    .union([
+      z.string().transform((val) => (val === "" ? 0 : Number(val))),
+      z.number(),
+      z.undefined(),
+    ])
+    .pipe(z.number().min(0).default(0)),
 });
 
 const billFormSchema = z.object({
@@ -85,6 +85,9 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
   const [signatures, setSignatures] = useState<string[]>(
     initialData?.entries?.map((e) => e.signature || "") || []
   );
+  const [paymentStatuses, setPaymentStatuses] = useState<string[]>(
+    initialData?.entries?.map((e) => e.paymentStatus || "cash") || []
+  );
   const [completedEntries, setCompletedEntries] = useState<Set<number>>(
     new Set()
   );
@@ -100,7 +103,6 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
           wagePerHour: undefined,
           overtimeHours: undefined,
           overtimeWagePerHour: undefined,
-          paymentStatus: "cash",
         },
       ],
     },
@@ -113,10 +115,15 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
 
   const watchedEntries = form.watch("entries");
 
-  // Update signatures array when entries change
+  // Update signatures and paymentStatuses arrays when entries change
   useMemo(() => {
     if (watchedEntries.length !== signatures.length) {
       setSignatures(watchedEntries.map((_, idx) => signatures[idx] || ""));
+    }
+    if (watchedEntries.length !== paymentStatuses.length) {
+      setPaymentStatuses(
+        watchedEntries.map((_, idx) => paymentStatuses[idx] || "cash")
+      );
     }
   }, [watchedEntries.length]);
 
@@ -139,9 +146,10 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
         ...entry,
         totalTk: regularPay + overtimePay,
         signature: signatures[index] || "",
+        paymentStatus: paymentStatuses[index] || "cash",
       };
     });
-  }, [watchedEntries, signatures]);
+  }, [watchedEntries, signatures, paymentStatuses]);
 
   const addWorkerEntry = () => {
     append({
@@ -150,7 +158,6 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
       wagePerHour: undefined,
       overtimeHours: 0,
       overtimeWagePerHour: 0,
-      paymentStatus: "cash",
     } as Parameters<typeof append>[0]);
   };
 
@@ -158,14 +165,15 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
     try {
       const entries: IBillEntry[] = watchedEntries.map((entry, index) => {
         const regularPay = (entry.workingHours || 0) * (entry.wagePerHour || 0);
-        const overtimePay = (entry.overtimeHours || 0) * (entry.overtimeWagePerHour || 0);
+        const overtimePay =
+          (entry.overtimeHours || 0) * (entry.overtimeWagePerHour || 0);
         return {
           workerName: entry.workerName,
           workingHours: entry.workingHours || 0,
           wagePerHour: entry.wagePerHour || 0,
           overtimeHours: entry.overtimeHours || 0,
           overtimeWagePerHour: entry.overtimeWagePerHour || 0,
-          paymentStatus: entry.paymentStatus || "cash",
+          paymentStatus: paymentStatuses[index] || "cash",
           totalTk: regularPay + overtimePay,
           signature: signatures[index] || undefined,
         };
@@ -370,35 +378,6 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                           )}
                         />
 
-                        <FormField
-                          // @ts-expect-error - Type mismatch due to Zod union/pipe schema
-                          control={form.control}
-                          name={`entries.${index}.paymentStatus`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Payment Status</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="text-lg min-h-[44px]">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="cash">Cash</SelectItem>
-                                  <SelectItem value="bank">Bank</SelectItem>
-                                  <SelectItem value="pending">
-                                    Pending
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
                         <div className="md:col-span-2 bg-muted p-3 rounded-lg">
                           <div className="flex justify-between items-center">
                             <span className="font-medium">Entry Total:</span>
@@ -515,7 +494,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
           return validEntries.length > 0 ? (
             <div className="mt-8">
               <BillPreview
-                entries={validEntries.map(entry => ({
+                entries={validEntries.map((entry) => ({
                   ...entry,
                   workingHours: entry.workingHours || 0,
                   wagePerHour: entry.wagePerHour || 0,
@@ -547,6 +526,25 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                       // Fallback: use the index directly if we can't find it
                       newSigs[index] = signature;
                       setSignatures(newSigs);
+                    }
+                  }
+                }}
+                onPaymentStatusChange={(index, paymentStatus) => {
+                  const newStatuses = [...paymentStatuses];
+                  // Find the entry in validEntries at this index
+                  const entry = validEntries[index];
+                  if (entry) {
+                    // Find the original index in watchedEntries
+                    const originalIndex = watchedEntries.findIndex(
+                      (e) => e.workerName === entry.workerName
+                    );
+                    if (originalIndex >= 0) {
+                      newStatuses[originalIndex] = paymentStatus;
+                      setPaymentStatuses(newStatuses);
+                    } else {
+                      // Fallback: use the index directly if we can't find it
+                      newStatuses[index] = paymentStatus;
+                      setPaymentStatuses(newStatuses);
                     }
                   }
                 }}
