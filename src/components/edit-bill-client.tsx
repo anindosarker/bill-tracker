@@ -20,7 +20,7 @@ export function EditBillClient({ bill, billId }: EditBillClientProps) {
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <Link href="/bills">
+          <Link href="/dashboard/bills">
             <Button variant="ghost" size="sm" className="min-h-[44px]">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Bills
@@ -42,7 +42,7 @@ export function EditBillClient({ bill, billId }: EditBillClientProps) {
                 duration: bill.duration || "",
               }}
               onSuccess={() => {
-                router.push(`/bills/${billId}/print`);
+                router.push(`/dashboard/bills/${billId}/print`);
               }}
             />
           </div>

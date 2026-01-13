@@ -1,22 +1,71 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Bill Attendance Tracker
+
+A web application for tracking worker bills and attendance with authentication.
+
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ 
+- MongoDB (local or MongoDB Atlas)
+- pnpm (or npm/yarn)
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+# MongoDB Connection
+# Get your connection string from MongoDB Atlas or your local MongoDB instance
+MONGODB_URI=mongodb://localhost:27017/bill-attendance
+# Example for MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/bill-attendance?retryWrites=true&w=majority
+
+# NextAuth Configuration
+# Generate a secret with: openssl rand -base64 32
+# Or use any random string for development
+NEXTAUTH_SECRET=your-secret-key-here-change-in-production
+
+# NextAuth URL
+# For local development, use: http://localhost:3000
+# For production, use your actual domain: https://yourdomain.com
+NEXTAUTH_URL=http://localhost:3000
+```
+
+### Installation
+
+1. Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+```
+
+2. Set up your environment variables (see above)
+
+3. Run the development server:
+
+```bash
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### First Time Setup
+
+1. Navigate to the homepage (login page)
+2. Click "Don't have an account? Sign up" to create your first account
+3. After registration, login with your credentials
+4. You'll be redirected to the dashboard where you can create and manage bills
+
+## Features
+
+- User authentication with email/password
+- Protected dashboard routes
+- Create, edit, and print bills
+- Track worker attendance and payments
+- Bill version history
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

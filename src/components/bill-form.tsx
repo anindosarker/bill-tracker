@@ -264,16 +264,16 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
         if (onSuccess) {
           onSuccess();
         } else {
-          router.push(`/bills/${billId}/print`);
+          router.push(`/dashboard/bills/${billId}/print`);
         }
       } else {
         const result = await createBillMutation.mutateAsync(billData);
         if (onSuccess) {
           onSuccess();
         } else if (result?._id) {
-          router.push(`/bills/${result._id}/print`);
+          router.push(`/dashboard/bills/${result._id}/print`);
         } else {
-          router.push("/bills");
+          router.push("/dashboard/bills");
         }
       }
     } catch (error) {
@@ -609,7 +609,7 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/bills")}
+                onClick={() => router.push("/dashboard/bills")}
                 className="min-h-[44px] min-w-[100px]"
               >
                 Cancel
