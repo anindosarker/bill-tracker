@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBillAction } from "@/hooks/actions/useBillAction";
 import { format } from "date-fns";
-import { Edit, Printer } from "lucide-react";
+import { Edit, Eye, Printer } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -61,11 +61,16 @@ export function BillList() {
                 </p>
               </div>
               <div className="flex gap-2">
+                <Button size="sm" asChild>
+                  <Link href={`/bills/${bill._id}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View
+                  </Link>
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => router.push(`/bills/${bill._id}/edit`)}
-                  className="min-h-[44px]"
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   Edit
@@ -74,7 +79,6 @@ export function BillList() {
                   variant="outline"
                   size="sm"
                   onClick={() => router.push(`/bills/${bill._id}/print`)}
-                  className="min-h-[44px]"
                 >
                   <Printer className="mr-2 h-4 w-4" />
                   Print
@@ -83,32 +87,30 @@ export function BillList() {
             </div>
           </CardHeader>
           <CardContent>
-            <Link href={`/bills/${bill._id}/edit`}>
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                  <div>
-                    <p className="text-muted-foreground">Workers</p>
-                    <p className="font-semibold">{bill.entries.length}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Total Entries</p>
-                    <p className="font-semibold">{bill.entries.length}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Grand Total</p>
-                    <p className="text-lg font-semibold">
-                      {bill.totalTk.toLocaleString("en-BD")} Tk
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Status</p>
-                    <p className="font-semibold">
-                      {bill.entries[0]?.paymentStatus || "N/A"}
-                    </p>
-                  </div>
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
+                <div>
+                  <p className="text-muted-foreground">Workers</p>
+                  <p className="font-semibold">{bill.entries.length}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Total Entries</p>
+                  <p className="font-semibold">{bill.entries.length}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Grand Total</p>
+                  <p className="text-lg font-semibold">
+                    {bill.totalTk.toLocaleString("en-BD")} Tk
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Status</p>
+                  <p className="font-semibold">
+                    {bill.entries[0]?.paymentStatus || "N/A"}
+                  </p>
                 </div>
               </div>
-            </Link>
+            </div>
           </CardContent>
         </Card>
       ))}
