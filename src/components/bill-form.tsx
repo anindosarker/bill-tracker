@@ -40,18 +40,20 @@ const billEntrySchema = z.object({
     .pipe(z.number().min(0, "Wage per hour must be positive").optional()),
   overtimeHours: z
     .union([
-      z.string().transform((val) => (val === "" ? 0 : Number(val))),
+      z.string().transform((val) => (val === "" ? undefined : Number(val))),
       z.number(),
       z.undefined(),
     ])
-    .pipe(z.number().min(0).default(0)),
+    .pipe(z.number().min(0, "Overtime hours must be positive").optional()),
   overtimeWagePerHour: z
     .union([
-      z.string().transform((val) => (val === "" ? 0 : Number(val))),
+      z.string().transform((val) => (val === "" ? undefined : Number(val))),
       z.number(),
       z.undefined(),
     ])
-    .pipe(z.number().min(0).default(0)),
+    .pipe(
+      z.number().min(0, "Overtime wage per hour must be positive").optional()
+    ),
 });
 
 const billFormSchema = z.object({
@@ -156,8 +158,8 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
       workerName: "",
       workingHours: undefined,
       wagePerHour: undefined,
-      overtimeHours: 0,
-      overtimeWagePerHour: 0,
+      overtimeHours: undefined,
+      overtimeWagePerHour: undefined,
     } as Parameters<typeof append>[0]);
   };
 
@@ -387,6 +389,37 @@ export function BillForm({ initialData, billId, onSuccess }: BillFormProps) {
                           </div>
                         </div>
                       </div>
+
+                      {/* Reminder for dirty fields */}
+                      {(() => {
+                        const entryDirtyFields =
+                          form.formState.dirtyFields.entries?.[index];
+                        const hasDirtyFields =
+                          entryDirtyFields &&
+                          Object.keys(entryDirtyFields).length > 0;
+                        const hasValidWorkerName =
+                          watchedEntries[index]?.workerName &&
+                          typeof watchedEntries[index]?.workerName ===
+                            "string" &&
+                          watchedEntries[index]?.workerName.trim().length > 0;
+                        const isNotCompleted = !completedEntries.has(index);
+
+                        if (
+                          hasDirtyFields &&
+                          hasValidWorkerName &&
+                          isNotCompleted
+                        ) {
+                          return (
+                            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                              <p className="text-sm text-yellow-800 font-medium">
+                                ⚠️ Don&apos;t forget to click &quot;Add to
+                                Bill&quot; to save this entry!
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
 
                       {/* Action buttons at the bottom */}
                       <div className="mt-4 pt-4 border-t flex gap-2 justify-between">

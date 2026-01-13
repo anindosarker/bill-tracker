@@ -49,7 +49,7 @@ export function BillPreview({
   const [editingCheckedBy, setEditingCheckedBy] = useState(false);
   const [editingApprovedBy, setEditingApprovedBy] = useState(false);
   const [editingSignatures, setEditingSignatures] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
   const [editingPaymentStatuses, setEditingPaymentStatuses] = useState<
     Set<number>
@@ -61,10 +61,10 @@ export function BillPreview({
   const [localCheckedBy, setLocalCheckedBy] = useState(checkedBy);
   const [localApprovedBy, setLocalApprovedBy] = useState(approvedBy);
   const [localSignatures, setLocalSignatures] = useState<string[]>(
-    entries.map((e) => e.signature || "")
+    entries.map((e) => e.signature || ""),
   );
   const [localPaymentStatuses, setLocalPaymentStatuses] = useState<string[]>(
-    entries.map((e) => e.paymentStatus || "cash")
+    entries.map((e) => e.paymentStatus || "cash"),
   );
 
   // Update local state when props change
@@ -398,7 +398,7 @@ export function BillPreview({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 rounded-full bg-green-100 hover:bg-green-200"
                           onClick={() => handleSavePaymentStatus(index)}
                         >
                           <Check className="h-3 w-3 text-green-600" />
@@ -407,7 +407,7 @@ export function BillPreview({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 rounded-full bg-red-100 hover:bg-red-200"
                           onClick={() => handleCancelPaymentStatus(index)}
                         >
                           <X className="h-3 w-3 text-red-600" />
@@ -422,7 +422,7 @@ export function BillPreview({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 rounded-full bg-muted hover:bg-muted/80"
                           onClick={() => {
                             const newEditing = new Set(editingPaymentStatuses);
                             newEditing.add(index);
@@ -457,7 +457,7 @@ export function BillPreview({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 rounded-full bg-green-100 hover:bg-green-200"
                           onClick={() => handleSaveSignature(index)}
                         >
                           <Check className="h-3 w-3 text-green-600" />
@@ -466,7 +466,7 @@ export function BillPreview({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 rounded-full bg-red-100 hover:bg-red-200"
                           onClick={() => handleCancelSignature(index)}
                         >
                           <X className="h-3 w-3 text-red-600" />
@@ -481,7 +481,7 @@ export function BillPreview({
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 rounded-full bg-muted hover:bg-muted/80"
                           onClick={() => {
                             const newEditing = new Set(editingSignatures);
                             newEditing.add(index);
@@ -510,7 +510,7 @@ export function BillPreview({
           </tbody>
         </table>
 
-        {/* Notes Section */}
+        {/* Notes Section - Above border */}
         <div>
           <div className="flex items-start gap-2">
             {editingNotes ? (
@@ -528,7 +528,7 @@ export function BillPreview({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 rounded-full bg-green-100 hover:bg-green-200"
                     onClick={handleSaveNotes}
                   >
                     <Check className="h-4 w-4 text-green-600" />
@@ -537,7 +537,7 @@ export function BillPreview({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-8 w-8 rounded-full bg-red-100 hover:bg-red-200"
                     onClick={handleCancelNotes}
                   >
                     <X className="h-4 w-4 text-red-600" />
@@ -547,13 +547,13 @@ export function BillPreview({
             ) : (
               <>
                 <p className="text-sm flex-1" style={{ fontFamily: "Arial" }}>
-                  {localNotes || "\u00A0"}
+                  {localNotes || ""}
                 </p>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 rounded-full bg-muted hover:bg-muted/80"
                   onClick={() => setEditingNotes(true)}
                 >
                   <Edit2 className="h-4 w-4" />
@@ -562,6 +562,9 @@ export function BillPreview({
             )}
           </div>
         </div>
+
+        {/* Border line after notes */}
+        <div className="border-t border-black my-2"></div>
 
         {/* In Words */}
         <div>
@@ -575,13 +578,12 @@ export function BillPreview({
           <div className="flex justify-between text-sm">
             <div className="flex items-start gap-2">
               <div className="flex-1">
-                <p style={{ fontFamily: "Times New Roman" }}>Prepared by</p>
                 {editingPreparedBy ? (
                   <Input
                     value={localPreparedBy}
                     onChange={(e) => setLocalPreparedBy(e.target.value)}
                     placeholder="Name"
-                    className="mt-1 h-8 text-xs"
+                    className="h-8 text-xs"
                     style={{ fontFamily: "Arial" }}
                     autoFocus
                   />
@@ -590,45 +592,51 @@ export function BillPreview({
                     {localPreparedBy ? `(${localPreparedBy})` : ""}
                   </p>
                 )}
+                {!editingPreparedBy ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 rounded-full bg-muted hover:bg-muted/80"
+                    onClick={() => setEditingPreparedBy(true)}
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                ) : (
+                  <div className="flex flex-col gap-1 mt-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 rounded-full bg-green-100 hover:bg-green-200"
+                      onClick={handleSavePreparedBy}
+                    >
+                      <Check className="h-3 w-3 text-green-600" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 rounded-full bg-red-100 hover:bg-red-200"
+                      onClick={handleCancelPreparedBy}
+                    >
+                      <X className="h-3 w-3 text-red-600" />
+                    </Button>
+                  </div>
+                )}
+                <div className="border-t border-black mb-1 w-32"></div>
+                <p style={{ fontFamily: "Times New Roman" }}>Prepared by</p>
               </div>
-              {!editingPreparedBy ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 mt-1"
-                  onClick={() => setEditingPreparedBy(true)}
-                >
-                  <Edit2 className="h-3 w-3" />
-                </Button>
-              ) : (
-                <div className="flex flex-col gap-1 mt-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={handleSavePreparedBy}
-                  >
-                    <Check className="h-3 w-3 text-green-600" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={handleCancelPreparedBy}
-                  >
-                    <X className="h-3 w-3 text-red-600" />
-                  </Button>
-                </div>
-              )}
             </div>
+
             <div className="text-right">
-              <p style={{ fontFamily: "Arial" }}>
+              {/* Line above Signature field */}
+              <div className="border-t border-black mb-1 w-40 ml-auto"></div>
+              <p style={{ fontFamily: "Arial" }}>(Prodip Kumar Sarker)</p>
+              <p className="mt-1" style={{ fontFamily: "Arial" }}>
                 For, Independent Agriscience Factory
               </p>
-              <p className="mt-4" style={{ fontFamily: "Times New Roman" }}>
+              <p className="mt-1" style={{ fontFamily: "Times New Roman" }}>
                 Bogura
               </p>
             </div>
@@ -637,6 +645,8 @@ export function BillPreview({
           <div className="flex justify-center gap-8 text-sm">
             <div className="flex items-start gap-2">
               <div>
+                {/* Line above Checked by */}
+                <div className="border-t border-black mb-1 w-32"></div>
                 <p style={{ fontFamily: "Arial" }}>Checked by:</p>
                 {editingCheckedBy ? (
                   <Input
@@ -656,7 +666,7 @@ export function BillPreview({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 mt-1"
+                  className="h-6 w-6 mt-1 rounded-full bg-muted hover:bg-muted/80"
                   onClick={() => setEditingCheckedBy(true)}
                 >
                   <Edit2 className="h-3 w-3" />
@@ -667,7 +677,7 @@ export function BillPreview({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-6 w-6 rounded-full bg-green-100 hover:bg-green-200"
                     onClick={handleSaveCheckedBy}
                   >
                     <Check className="h-3 w-3 text-green-600" />
@@ -676,7 +686,7 @@ export function BillPreview({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-6 w-6 rounded-full bg-red-100 hover:bg-red-200"
                     onClick={handleCancelCheckedBy}
                   >
                     <X className="h-3 w-3 text-red-600" />
@@ -686,6 +696,8 @@ export function BillPreview({
             </div>
             <div className="flex items-start gap-2">
               <div>
+                {/* Line above Approved by */}
+                <div className="border-t border-black mb-1 w-32"></div>
                 <p style={{ fontFamily: "Arial" }}>Approved by:</p>
                 {editingApprovedBy ? (
                   <Input
@@ -705,7 +717,7 @@ export function BillPreview({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 mt-1"
+                  className="h-6 w-6 mt-1 rounded-full bg-muted hover:bg-muted/80"
                   onClick={() => setEditingApprovedBy(true)}
                 >
                   <Edit2 className="h-3 w-3" />
@@ -716,7 +728,7 @@ export function BillPreview({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-6 w-6 rounded-full bg-green-100 hover:bg-green-200"
                     onClick={handleSaveApprovedBy}
                   >
                     <Check className="h-3 w-3 text-green-600" />
@@ -725,7 +737,7 @@ export function BillPreview({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-6 w-6 rounded-full bg-red-100 hover:bg-red-200"
                     onClick={handleCancelApprovedBy}
                   >
                     <X className="h-3 w-3 text-red-600" />
