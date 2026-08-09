@@ -1,3 +1,5 @@
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Bill Attendance Tracker
@@ -8,7 +10,7 @@ A web application for tracking worker bills and attendance with authentication.
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 20+
 - MongoDB (local or MongoDB Atlas)
 - pnpm (or npm/yarn)
 
